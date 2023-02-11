@@ -4,6 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func init() {
+	loadEnvVars()
+	ConnectToDatabase()
+}
+
 func main() {
 
 	router := gin.Default()
