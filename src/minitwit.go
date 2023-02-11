@@ -5,8 +5,8 @@ import (
 )
 
 func init() {
-	loadEnvVars()
-	ConnectToDatabase()
+	initializers.loadEnvVars()
+	initializers.ConnectToDatabase()
 }
 
 func main() {
