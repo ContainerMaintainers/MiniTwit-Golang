@@ -1,4 +1,4 @@
-package main
+package database
 
 type Message struct {
 	message_id uint   `gorm:"autoIncrement; primaryKey"`

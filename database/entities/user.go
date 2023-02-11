@@ -1,4 +1,4 @@
-package main
+package database
 
 type User struct {
 	user_id  uint   `gorm:"autoIncrement; primaryKey"`
