@@ -7,10 +7,12 @@ import (
 func main() {
 
 	router := gin.Default()
+	router.LoadHTMLGlob("templates/*")
+
 	router.GET("ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
-	r.Run() // port 8080
+	router.Run() // port 8080
 }
