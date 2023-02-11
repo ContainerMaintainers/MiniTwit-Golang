@@ -1,12 +1,37 @@
 version: "3.8"
 services:
+
   postgres:
-    image: postgres:alpine
-    volumes:
-      - ./db:/var/lib/postgresql/data
+    image: postgres
     environment:
-      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
+    expose:
+      - "5432"
+    networks:
+      - minitwit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    networks:
+          - minitwit-network
+    tty: true
+    restart: on-failure:10
+    
+networks:
+  minitwit-network:
+    external:
+      name: minitwit-network
