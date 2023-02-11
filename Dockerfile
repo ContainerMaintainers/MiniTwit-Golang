@@ -24,4 +24,5 @@ RUN go build -o . ./src/minitwit.go
 EXPOSE $PORT
 
 # Now tell Docker what command to run when the container starts
-CMD ["run"]
+# This will run the compiled minitwit file, when it is ready
+#CMD ["./minitwit"]
