@@ -1,8 +1,8 @@
 package entities
 
 type User struct {
-	user_id  uint   `gorm:"autoIncrement; primaryKey"`
-	username string `gorm:"not null"`
-	email    string `gorm:"not null"`
-	pw_hash  string `gorm:"not null"`
+	User_ID  uint   `gorm:"autoIncrement; primaryKey"`
+	Username string `gorm:"not null"`
+	Email    string `gorm:"not null"`
+	PW_Hash  string `gorm:"not null"`
 }
