@@ -2,7 +2,7 @@
 A golang gin refactor of the minitwit application.
 
 # To set up the development environment and how to run the application:
-Run
+Download this repository and run
 ```
 git clone https://github.com/ContainerMaintainers/MiniTwit-Golang.git
 ```
