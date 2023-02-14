@@ -1,4 +1,17 @@
 # MiniTwit-Golang
 A golang gin refactor of the minitwit application.
 
-For more information on how to set up the development environment and how to run the application, please consult the wiki.
+# To set up the development environment and run the application:
+Download this repository and run
+```
+git clone https://github.com/ContainerMaintainers/MiniTwit-Golang.git
+```
+The go into the repository using
+```bash
+cd MiniTwit-Golang
+```
+Then set up the development environment by running
+
+```
+sh run.sh
+```
