@@ -1,6 +1,6 @@
 # Base this docker container off the official golang docker image.
 # Docker containers inherit everything from their base.
-FROM golang:1.19-alpine
+FROM golang:1.19
 
 # Create a directory inside the container to store all our application 
 # and then make it the working directory.
@@ -8,8 +8,7 @@ WORKDIR /usr/src/app
 
 # Copy everything and Download Go modules
 COPY . .
-RUN go mod download
-RUN go mod tidy
+RUN go mod download && go mod tidy
 
 # Build the application (this will build only minitwit.go)
 RUN go build -o . minitwit.go
