@@ -1,9 +1,9 @@
 package entities
 
 type Message struct {
-	message_id uint   `gorm:"autoIncrement; primaryKey"`
-	author_id  uint   `gorm:"not null"`
-	text       string `gorm:"not null"`
-	pub_date   uint   `gorm:"not null"`
-	flagged    bool   `gorm:"not null"`
+	Message_ID uint   `gorm:"autoIncrement; primaryKey"`
+	Author_id  uint   `gorm:"not null"`
+	Text       string `gorm:"not null"`
+	Pub_Date   uint   `gorm:"not null"`
+	Flagged    bool   `gorm:"not null"`
 }

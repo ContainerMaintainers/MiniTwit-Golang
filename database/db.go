@@ -3,9 +3,10 @@ package database
 import (
 	"fmt"
 	"os"
-	
+
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -18,6 +19,15 @@ func ConnectToDatabase() {
 
 	if err != nil {
 		fmt.Println("error connecting to database ", err)
+	}
+}
+
+func ConnectToTestDatabase() {
+	var err error
+	DB, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+
+	if err != nil {
+		fmt.Println("error connecting to database %s", err)
 	}
 }
 
