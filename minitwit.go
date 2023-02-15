@@ -16,14 +16,13 @@ import (
 
 func getUserId(username string) (uint, error) { //Convenience method to look up the id for a username.
 
-	var result uint
-	database.DB.Raw("select user_id from users where username = ?", username).Scan(&result)
+	var user entities.User
 
-	// if result == 0 {
-	// 	return (error
-	// }
+	if err := database.DB.Where("username = ?", username).First(&user).Error; err != nil {
+		return 0, err
+	}
 
-	//return uint32(result)
+	return user.User_ID, nil
 }
 
 func ping(c *gin.Context) {
@@ -57,19 +56,27 @@ func username(c *gin.Context) { //Displays a user's tweets
 
 func usernameFollow(c *gin.Context) { //Adds the current user as follower of the given user
 
+	username := c.Param("username")
+
 	var body struct {
-		Who_ID  uint
-		Whom_ID uint
+		Who_ID uint
 	}
 
 	c.Bind(&body)
 
 	//who  = set logged in user as who
+
 	//whom = get id from username
+	whom, err := getUserId(username)
+
+	if err != nil {
+		c.Status(404)
+		return
+	}
 
 	post := entities.Follower{
 		Who_ID:  body.Who_ID,
-		Whom_ID: body.Whom_ID,
+		Whom_ID: whom,
 	}
 
 	result := database.DB.Create(&post)
