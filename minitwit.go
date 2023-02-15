@@ -86,6 +86,36 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 
 }
 
+// SIM ENDPOINTS:
+
+func simLatest(c *gin.Context) {
+	c.String(200, "simLatest")
+}
+
+func simRegister(c *gin.Context) {
+	c.String(200, "simRegister")
+}
+
+func simMsgs(c *gin.Context) {
+	c.String(200, "simMsgs")
+}
+
+func simPostUserMsg(c *gin.Context) {
+	c.String(200, "simPostUserMsg")
+}
+
+func simGetUserMsg(c *gin.Context) {
+	c.String(200, "simGetUserMsg")
+}
+
+func simGetUserFllws(c *gin.Context) {
+	c.String(200, "simGetUserFllws")
+}
+
+func simPostUserFllws(c *gin.Context) {
+	c.String(200, "simPostUserFllws")
+}
+
 func setupRouter() *gin.Engine {
 
 	router := gin.Default()
@@ -95,6 +125,17 @@ func setupRouter() *gin.Engine {
 	router.GET("/public", public)
 	router.GET("/:username", username)
 	router.POST("/:username/follow", usernameFollow)
+
+	// SIM ENDPOINTS:
+
+	router.GET("/sim/latest", simLatest)
+	router.POST("/sim/register", simRegister)
+	router.GET("/sim/msgs", simMsgs)
+	router.POST("/sim/msgs/:username", simPostUserMsg)
+	router.GET("/sim/msgs/:username", simGetUserMsg)
+	router.POST("/sim/fllws/:username", simPostUserFllws)
+	router.GET("/sim/fllws/:username", simGetUserFllws)
+
 	return router
 
 }
