@@ -3,8 +3,10 @@ package database
 import (
 	"fmt"
 	"os"
+	"log"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -36,18 +38,13 @@ func MigrateEntities() {
 }
 
 func SeedDatabase() {
-	//Users
-	DB.Create(&entities.User{User_ID: 1, Username: "user1", Email: "user1@gmail.com", PW_Hash: "user1iscool"})
-	DB.Create(&entities.User{User_ID: 1, Username: "user2", Email: "user1@gmail.com", PW_Hash: "user2iscool"})
-	DB.Create(&entities.User{User_ID: 1, Username: "user3", Email: "user1@gmail.com", PW_Hash: "user3iscool"})
+	//closes the database connection after the seeding is done
+	defer DB.Close()
 
-	//Messages
-	DB.Create(&entities.Message{Message_ID: 1, Author_ID: 1, Text: "Hello World! From user1", Pub_Date: 123456, Flagged: false})
-	DB.Create(&entities.Message{Message_ID: 2, Author_ID: 2, Text: "Hello World! From user2", Pub_Date: 123456, Flagged: false})
-	DB.Create(&entities.Message{Message_ID: 3, Author_ID: 3, Text: "Hello World! From user3", Pub_Date: 123456, Flagged: false})
-
-	//Followers
-	DB.Create(&entities.Follower{Who_ID: 1, Whom_ID: 2})
-	DB.Create(&entities.Follower{Who_ID: 1, Whom_ID: 3})
-	DB.Create(&entities.Follower{Who_ID: 3, Whom_ID: 2})
+	for _, seed := range AllSeeds() {
+		err := seed.Run(DB)
+		if err != nil {
+			log.Fatalf("Error when seeding database with the following seed: %s\nError message: %s", seed.SeedName, err)
+		}
+	}
 }
