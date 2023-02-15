@@ -2,10 +2,29 @@ package main
 
 import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 
 	"github.com/gin-gonic/gin"
 )
+
+// def get_user_id(username):
+//     """Convenience method to look up the id for a username."""
+//     rv = g.db.execute('select user_id from user where username = ?',
+//                        [username]).fetchone()
+//     return rv[0] if rv else None
+
+func getUserId(username string) (uint, error) { //Convenience method to look up the id for a username.
+
+	var result uint
+	database.DB.Raw("select user_id from users where username = ?", username).Scan(&result)
+
+	// if result == 0 {
+	// 	return (error
+	// }
+
+	//return uint32(result)
+}
 
 func ping(c *gin.Context) {
 	c.JSON(200, gin.H{
@@ -37,10 +56,34 @@ func username(c *gin.Context) { //Displays a user's tweets
 }
 
 func usernameFollow(c *gin.Context) { //Adds the current user as follower of the given user
-	username := c.Param("username")
+
+	var body struct {
+		Who_ID  uint
+		Whom_ID uint
+	}
+
+	c.Bind(&body)
+
+	//who  = set logged in user as who
+	//whom = get id from username
+
+	post := entities.Follower{
+		Who_ID:  body.Who_ID,
+		Whom_ID: body.Whom_ID,
+	}
+
+	result := database.DB.Create(&post)
+
+	if result.Error != nil { //when user is already following 'whom' || or given wrong types in fields
+		c.Status(400)
+		return
+	}
+
+	//username := c.Param("username")
 	c.JSON(200, gin.H{
-		"username": username,
+		"follower": post,
 	})
+
 }
 
 func setupRouter() *gin.Engine {
