@@ -16,56 +16,56 @@ func AllSeeds() []Seed {
 		Seed{
 			SeedName: "CreateUser1",
 			Run: func(db *gorm.DB) error {
-				CreateUser(db, 1, "user1", "user1@gmail.com", "user1iscool")
-			}
+				return CreateUser(db, 1, "user1", "user1@gmail.com", "user1iscool")
+			},
 		},
 		Seed{
 			SeedName: "CreateUser2",
 			Run: func(db *gorm.DB) error {
-				CreateUser(db, 2, "user2", "user2@gmail.com", "user2iscool")
-			}
+				return CreateUser(db, 2, "user2", "user2@gmail.com", "user2iscool")
+			},
 		},
 		Seed{
 			SeedName: "CreateUser3",
 			Run: func(db *gorm.DB) error {
-				CreateUser(db, 3, "user3", "user3@gmail.com", "user3iscool")
-			}
+				return CreateUser(db, 3, "user3", "user3@gmail.com", "user3iscool")
+			},
 		},
 		Seed{
 			SeedName: "CreateMessage1",
 			Run: func(db *gorm.DB) error {
-				CreateMessage(db, 1, 1, "Hello World! From user1", 123456, false)
-			}
+				return CreateMessage(db, 1, 1, "Hello World! From user1", 123456, false)
+			},
 		},
 		Seed{
 			SeedName: "CreateMessage2",
 			Run: func(db *gorm.DB) error {
-				CreateMessage(db, 2, 2, "Hello World! From user2", 123456, false)
-			}
+				return CreateMessage(db, 2, 2, "Hello World! From user2", 123456, false)
+			},
 		},
 		Seed{
 			SeedName: "CreateMessage3",
 			Run: func(db *gorm.DB) error {
-				CreateMessage(db, 3, 3, "Hello World! From user3", 123456, false)
-			}
+				return CreateMessage(db, 3, 3, "Hello World! From user3", 123456, false)
+			},
 		},
 		Seed{
 			SeedName: "CreateFollower1",
 			Run: func(db *gorm.DB) error {
-				CreateFollower(db, 1, 2)
-			}
+				return CreateFollower(db, 1, 2)
+			},
 		},
 		Seed{
 			SeedName: "CreateFollower2",
 			Run: func(db *gorm.DB) error {
-				CreateFollower(db, 1, 3)
-			}
+				return CreateFollower(db, 1, 3)
+			},
 		},
 		Seed{
 			SeedName: "CreateFollower3",
 			Run: func(db *gorm.DB) error {
-				CreateFollower(db, 3, 2)
-			}
+				return CreateFollower(db, 3, 2)
+			},
 		},
 	}
 }
@@ -79,16 +79,17 @@ func CreateUser(db *gorm.DB, userID uint, username string, email string, pw stri
 					PW_Hash: pw}).Error
 }
 
+func CreateMessage(db *gorm.DB, message uint, author uint, text string, date uint, flagged bool) error {
+	return db.Create(&entities.Message{
+					Message_id: message,
+					Author_id: author, 
+					Text: text, 
+					Pub_Date: date, 
+					Flagged: flagged}).Error
+}
+
 func CreateFollower(db *gorm.DB, who uint, whom uint) error {
 	return db.Create(&entities.Follower{
 					Who_ID: who,
 					Whom_ID: whom}).Error
-}
-
-func CreateMessage(db *gorm.DB, author uint, text string, date uint, flagged bool) error {
-	return db.Create(&entities.User{
-					Author_ID: author, 
-					Text: text, 
-					Pub_Date: date, 
-					Flagged: flagged}).Error
 }
