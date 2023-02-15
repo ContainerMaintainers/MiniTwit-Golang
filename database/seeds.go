@@ -16,55 +16,55 @@ func AllSeeds() []Seed {
 		Seed{
 			SeedName: "CreateUser1",
 			Run: func(db *gorm.DB) error {
-				db.Create(&entities.User{User_ID: 1, Username: "user1", Email: "user1@gmail.com", PW_Hash "user1iscool"})
+				CreateUser(db, 1, "user1", "user1@gmail.com", "user1iscool")
 			}
 		},
 		Seed{
 			SeedName: "CreateUser2",
 			Run: func(db *gorm.DB) error {
-				db.Create(&entities.User{User_ID: 2, Username: "user2", Email: "user2@gmail.com", PW_Hash "user2iscool"})
+				CreateUser(db, 2, "user2", "user2@gmail.com", "user2iscool")
 			}
 		},
 		Seed{
 			SeedName: "CreateUser3",
 			Run: func(db *gorm.DB) error {
-				db.Create(&entities.User{User_ID: 3, Username: "user3", Email: "user3@gmail.com", PW_Hash "user3iscool"})
+				CreateUser(db, 3, "user3", "user3@gmail.com", "user3iscool")
 			}
 		},
 		Seed{
 			SeedName: "CreateMessage1",
 			Run: func(db *gorm.DB) error {
-				db.Create(&entities.Message{Message_ID: 1, Author_ID: 1, Text: "Hello World! From user1", Pub_Date: 123456, Flagged: false})
+				CreateMessage(db, 1, 1, "Hello World! From user1", 123456, false)
 			}
 		},
 		Seed{
 			SeedName: "CreateMessage2",
 			Run: func(db *gorm.DB) error {
-				db.Create(&entities.Message{Message_ID: 2, Author_ID: 2, Text: "Hello World! From user2", Pub_Date: 123456, Flagged: false})
+				CreateMessage(db, 2, 2, "Hello World! From user2", 123456, false)
 			}
 		},
 		Seed{
 			SeedName: "CreateMessage3",
 			Run: func(db *gorm.DB) error {
-				db.Create(&entities.Message{Message_ID: 3, Author_ID: 3, Text: "Hello World! From user3", Pub_Date: 123456, Flagged: false})
+				CreateMessage(db, 3, 3, "Hello World! From user3", 123456, false)
 			}
 		},
 		Seed{
 			SeedName: "CreateFollower1",
 			Run: func(db *gorm.DB) error {
-				db.Create(&entities.Follower{Who_ID: 1, Whom_ID: 2})
+				CreateFollower(db, 1, 2)
 			}
 		},
 		Seed{
 			SeedName: "CreateFollower2",
 			Run: func(db *gorm.DB) error {
-				db.Create(&entities.Follower{Who_ID: 1, Whom_ID: 3})
+				CreateFollower(db, 1, 3)
 			}
 		},
 		Seed{
 			SeedName: "CreateFollower3",
 			Run: func(db *gorm.DB) error {
-				db.Create(&entities.Follower{Who_ID: 3, Whom_ID: 2})
+				CreateFollower(db, 3, 2)
 			}
 		},
 	}
