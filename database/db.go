@@ -38,9 +38,6 @@ func MigrateEntities() {
 }
 
 func SeedDatabase() {
-	//closes the database connection after the seeding is done
-	defer DB.Close()
-
 	for _, seed := range AllSeeds() {
 		err := seed.Run(DB)
 		if err != nil {
