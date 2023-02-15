@@ -34,3 +34,20 @@ func ConnectToTestDatabase() {
 func MigrateEntities() {
 	DB.AutoMigrate(&entities.User{}, &entities.Message{}, &entities.Follower{})
 }
+
+func SeedDatabase() {
+	//Users
+	DB.Create(&entities.User{User_ID: 1, Username: "user1", Email: "user1@gmail.com", PW_Hash: "user1iscool"})
+	DB.Create(&entities.User{User_ID: 1, Username: "user2", Email: "user1@gmail.com", PW_Hash: "user2iscool"})
+	DB.Create(&entities.User{User_ID: 1, Username: "user3", Email: "user1@gmail.com", PW_Hash: "user3iscool"})
+
+	//Messages
+	DB.Create(&entities.Message{Message_ID: 1, Author_ID: 1, Text: "Hello World! From user1", Pub_Date: 123456, Flagged: false})
+	DB.Create(&entities.Message{Message_ID: 2, Author_ID: 2, Text: "Hello World! From user2", Pub_Date: 123456, Flagged: false})
+	DB.Create(&entities.Message{Message_ID: 3, Author_ID: 3, Text: "Hello World! From user3", Pub_Date: 123456, Flagged: false})
+
+	//Followers
+	DB.Create(&entities.Follower{Who_ID: 1, Whom_ID: 2})
+	DB.Create(&entities.Follower{Who_ID: 1, Whom_ID: 3})
+	DB.Create(&entities.Follower{Who_ID: 3, Whom_ID: 2})
+}
