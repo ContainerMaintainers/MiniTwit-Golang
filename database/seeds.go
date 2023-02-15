@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 )
