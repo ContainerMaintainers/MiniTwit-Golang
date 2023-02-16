@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
@@ -23,7 +25,7 @@ func getUserId(username string) (uint, error) { //Convenience method to look up 
 	// 	return (error
 	// }
 
-	//return uint32(result)
+	return uint(result), nil
 }
 
 func ping(c *gin.Context) {
@@ -86,6 +88,44 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 
 }
 
+func register(c *gin.Context) {
+
+	var body struct {
+		Username  string `json:"username"`
+		Password  string `json:"password"`
+		Password2 string `json:"password2"`
+		Email     string `json:"email"`
+	}
+
+	c.BindJSON(&body)
+
+	error := ""
+
+	if body.Username == "" {
+		error = "You have to enter a username"
+	} else if body.Email == "" || !strings.Contains(body.Email, "@") {
+		error = "You have to enter a valid email address"
+	} else if body.Password == "" {
+		error = "You have to enter a password"
+	} else if body.Password != body.Password2 {
+		error = "The two passwords do not match"
+	} else if id, _ := getUserId(body.Username); id != 0 {
+		error = "The username is already taken"
+	} else {
+		user := entities.User{
+			Username: body.Username,
+			PW_Hash:  body.Password, // UPDATE SO PASSWORD IS HASHED
+			Email:    body.Email,
+		}
+
+		database.DB.Create(&user)
+
+	}
+
+	c.String(200, error)
+
+}
+
 func setupRouter() *gin.Engine {
 
 	router := gin.Default()
@@ -95,17 +135,18 @@ func setupRouter() *gin.Engine {
 	router.GET("/public", public)
 	router.GET("/:username", username)
 	router.POST("/:username/follow", usernameFollow)
+	router.POST("/register", register)
 	return router
 
 }
 
 func init() {
 	initializers.LoadEnvVars()
-	database.ConnectToDatabase()
-	database.MigrateEntities()
 }
 
 func main() {
+	database.ConnectToDatabase()
+	database.MigrateEntities()
 
 	router := setupRouter()
 	router.Run() // port 8080

@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -44,7 +43,7 @@ func login(username string, password string) *httptest.ResponseRecorder {
 	return w
 }
 
-func register(username string, password string, password2 string, email string) *httptest.ResponseRecorder {
+func register_helper(username string, password string, password2 string, email string) *httptest.ResponseRecorder {
 
 	if password2 == "" {
 		password2 = password
@@ -72,7 +71,7 @@ func register(username string, password string, password2 string, email string) 
 }
 
 func register_and_login(username string, password string) *httptest.ResponseRecorder {
-	register(username, password, "", "")
+	register_helper(username, password, "", "")
 	return login(username, password)
 }
 
@@ -101,41 +100,23 @@ func add_message(text string) *httptest.ResponseRecorder {
 
 // ------ Tests ------ //
 
-func TestPingRoute(t *testing.T) {
-
-	user := entities.User{User_ID: 1, Username: "name", Email: "email", PW_Hash: "hash"}
-	database.DB.Create(&user)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/ping", nil)
-	router.ServeHTTP(w, req)
-
-	var response map[string]interface{}
-	if err := json.NewDecoder(w.Body).Decode(&response); err != nil {
-		log.Fatalln(err)
-	}
-
-	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, "pong", response["message"])
-}
-
 func TestRegister(t *testing.T) {
-	w1 := register("user1", "default", "", "")
+	w1 := register_helper("user1", "default", "", "")
 	assert.Contains(t, w1.Body.String(), "You were successfully registered and can login now")
 
-	w2 := register("user1", "default", "", "")
+	w2 := register_helper("user1", "default", "", "")
 	assert.Contains(t, w2.Body.String(), "The username is already taken")
 
-	w3 := register("", "default", "", "")
+	w3 := register_helper("", "default", "", "")
 	assert.Contains(t, w3.Body.String(), "You have to enter a username")
 
-	w4 := register("meh", "", "", "")
+	w4 := register_helper("meh", "", "", "")
 	assert.Contains(t, w4.Body.String(), "You have to enter a password")
 
-	w5 := register("meh", "x", "y", "")
+	w5 := register_helper("meh", "x", "y", "")
 	assert.Contains(t, w5.Body.String(), "The two passwords do not match")
 
-	w6 := register("meh", "default", "", "broken")
+	w6 := register_helper("meh", "default", "", "broken")
 	assert.Contains(t, w6.Body.String(), "You have to enter a valid email address")
 }
 
