@@ -2,6 +2,7 @@ package main
 
 import (
 	"strings"
+	"time"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
@@ -10,11 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// def get_user_id(username):
-//     """Convenience method to look up the id for a username."""
-//     rv = g.db.execute('select user_id from user where username = ?',
-//                        [username]).fetchone()
-//     return rv[0] if rv else None
+const Per_page int = 30
 
 func getUserId(username string) (uint, error) { //Convenience method to look up the id for a username.
 
@@ -35,16 +32,15 @@ func ping(c *gin.Context) {
 
 func public(c *gin.Context) { //Displays the latest messages of all users
 
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
+	var messages []entities.Message
 
-	/* from python project:
-	   return render_template('timeline.html', messages=query_db('''
-	       select message.*, user.* from message, user
-	       where message.flagged = 0 and message.author_id = user.user_id
-	       order by message.pub_date desc limit ?''', [PER_PAGE]))
-	*/
+	if err := database.DB.Where("Flagged = false").Order("Pub_Date desc").Limit(Per_page).Find(&messages).Error; err != nil {
+		c.AbortWithStatus(400)
+	}
+
+	c.JSON(200, gin.H{
+		"messages": messages,
+	})
 }
 
 func username(c *gin.Context) { //Displays a user's tweets
@@ -58,41 +54,90 @@ func username(c *gin.Context) { //Displays a user's tweets
 
 func usernameFollow(c *gin.Context) { //Adds the current user as follower of the given user
 
+	//check if there exists a session user, if not, return error 401, try c.AbortWithStatus(401)
+
 	username := c.Param("username")
 
-	var body struct {
-		Who_ID uint
-	}
+	who := uint(4) // SHOULD GET SESSION USER ID
 
-	c.Bind(&body)
-
-	//who  = set logged in user as who
-
-	//whom = get id from username
 	whom, err := getUserId(username)
 
 	if err != nil {
 		c.Status(404)
 		return
 	}
-
-	post := entities.Follower{
-		Who_ID:  body.Who_ID,
+	follow := entities.Follower{
+		Who_ID:  who, // !
 		Whom_ID: whom,
 	}
-
-	result := database.DB.Create(&post)
-
-	if result.Error != nil { //when user is already following 'whom' || or given wrong types in fields
+	result := database.DB.Create(&follow)
+	if result.Error != nil { //when user is already following 'whom'
 		c.Status(400)
 		return
 	}
 
-	//username := c.Param("username")
 	c.JSON(200, gin.H{
-		"follower": post,
+		"follower": follow,
 	})
 
+}
+
+func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of the given user
+
+	//check if there exists a session user, if not, return error 401, try c.AbortWithStatus(401)
+
+	username := c.Param("username")
+
+	who := uint(4) // SHOULD GET SESSION USER ID
+
+	whom, err := getUserId(username)
+
+	if err != nil {
+		c.Status(404)
+		return
+	}
+	unfollow := entities.Follower{
+		Who_ID:  who, // !
+		Whom_ID: whom,
+	}
+	result := database.DB.Where("Who_ID = ? AND Whom_ID = ?", unfollow.Who_ID, unfollow.Whom_ID).Delete(&unfollow)
+	if result.Error != nil { //when user is already following 'whom'
+		c.Status(400)
+		return
+	}
+
+	c.JSON(204, gin.H{
+		"follower": unfollow,
+	})
+
+}
+
+func addMessage(c *gin.Context) { //Registers a new message for the user.
+
+	//check if there exists a session user, if not, return error 401, try c.AbortWithStatus(401)
+
+	var body struct {
+		Text string `json:"text"`
+	}
+
+	c.BindJSON(&body)
+
+	message := entities.Message{
+		Author_id: 4, // AUTHOR ID SHOULD GET SESSION USER ID
+		Text:      body.Text,
+		Pub_Date:  uint(time.Now().Unix()),
+		Flagged:   false,
+	}
+
+	result := database.DB.Create(&message)
+
+	if result.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	//redirect to timeline ("/")
+	c.Redirect(200, "/") // For some reason, this returns error 500, but I assume it's because the path doesn't exist yet?
 }
 
 func register(c *gin.Context) {
@@ -172,7 +217,9 @@ func setupRouter() *gin.Engine {
 	router.GET("/public", public)
 	router.GET("/:username", username)
 	router.POST("/:username/follow", usernameFollow)
+	router.DELETE("/:username/unfollow", usernameUnfollow)
 	router.POST("/register", register)
+	router.POST("/add_message", addMessage)
 
 	// SIM ENDPOINTS:
 
