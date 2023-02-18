@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"strings"
 	"time"
 
@@ -22,6 +23,18 @@ func getUserId(username string) (uint, error) { //Convenience method to look up 
 	}
 
 	return user.ID, nil
+}
+
+func checkPasswordHash(username string, enteredPW string) (bool, error) {
+	var user entities.User
+
+	hashedEnteredPW := enteredPW //hash "enteredPW" with hash function we're using
+
+	if err := database.DB.Where("username = ? AND pw_hash = ?", username, hashedEnteredPW).First(&user).Error; err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func ping(c *gin.Context) {
@@ -154,6 +167,37 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	c.Redirect(200, "/") // For some reason, this returns error 500, but I assume it's because the path doesn't exist yet?
 }
 
+func loginf(c *gin.Context) { //Logs the user in.
+	//check if there exists a session user, if yes, redirect to timeline ("/")
+
+	var body struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	c.BindJSON(&body)
+
+	error := ""
+
+	//if POST req?
+	if _, err := getUserId(body.Username); err != nil {
+		error = "Invalid username"
+	} else if _, err := checkPasswordHash(body.Username, body.Password); err != nil {
+		error = "Invalid password"
+	} else {
+		//give message "You were logged in."
+		log.Printf("You were logged in")
+		//set session user to body.Username
+
+		//redirect to timeline ("/")
+		c.Redirect(200, "/")
+
+	}
+
+	c.String(400, error)
+
+}
+
 func register(c *gin.Context) {
 
 	var body struct {
@@ -234,6 +278,7 @@ func setupRouter() *gin.Engine {
 	router.DELETE("/:username/unfollow", usernameUnfollow)
 	router.POST("/register", register)
 	router.POST("/add_message", addMessage)
+	router.POST("/login", loginf)
 
 	// SIM ENDPOINTS:
 
