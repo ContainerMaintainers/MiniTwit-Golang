@@ -46,8 +46,22 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 func username(c *gin.Context) { //Displays a user's tweets
 
 	username := c.Param("username") //gets the <username> from the url
+
+	userID, err := getUserId(username)
+
+	if err != nil {
+		c.Status(404)
+		return
+	}
+
+	var messagesFromUser []entities.Message
+
+	if err := database.DB.Where("author_id = ?", userID).Limit(Per_page).Find(&messagesFromUser).Error; err != nil {
+		c.AbortWithStatus(404)
+	}
+
 	c.JSON(200, gin.H{
-		"username": username,
+		"messagesFromUser": messagesFromUser,
 	})
 
 }
