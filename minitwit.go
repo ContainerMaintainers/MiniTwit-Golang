@@ -53,6 +53,13 @@ func ping(c *gin.Context) {
 	})
 }
 
+// ENDPOINT: GET /
+func timeline(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"everything": "yep",
+	})
+}
+
 // ENDPOINT: GET /public
 func public(c *gin.Context) { //Displays the latest messages of all users
 
