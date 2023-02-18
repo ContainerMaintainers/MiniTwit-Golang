@@ -234,10 +234,9 @@ func simRegister(c *gin.Context) {
 	updateLatest(c.Request)
 
 	var body struct {
-		Username  string `json:"username"`
-		Password  string `json:"password"`
-		Password2 string `json:"password2"`
-		Email     string `json:"email"`
+		Username string `json:"username"`
+		Password string `json:"pwd"`
+		Email    string `json:"email"`
 	}
 
 	c.BindJSON(&body)
@@ -250,8 +249,6 @@ func simRegister(c *gin.Context) {
 		error = "You have to enter a valid email address"
 	} else if body.Password == "" {
 		error = "You have to enter a password"
-	} else if body.Password != body.Password2 {
-		error = "The two passwords do not match"
 	} else if id, _ := getUserId(body.Username); id != 0 {
 		error = "The username is already taken"
 	} else {
@@ -426,6 +423,13 @@ func simGetUserFllws(c *gin.Context) {
 // ENDPOINT: POST /sim/fllws/:username
 func simPostUserFllws(c *gin.Context) {
 
+	var body struct {
+		Follow   string `json:"follow"`
+		Unfollow string `json:"unfollow"`
+	}
+
+	c.BindJSON(&body)
+
 	updateLatest(c.Request)
 
 	if notFromSimResponse := notReqFromSimulator(c.Request); notFromSimResponse != nil {
@@ -441,12 +445,9 @@ func simPostUserFllws(c *gin.Context) {
 		c.AbortWithStatus(404)
 	}
 
-	follow := c.Request.Header.Get("follow")
-	unfollow := c.Request.Header.Get("unfollow")
+	if body.Follow != "" {
 
-	if follow != "" {
-
-		follow_user_id, err := getUserId(username)
+		follow_user_id, err := getUserId(body.Follow)
 		if err != nil {
 			log.Fatal(err)
 			c.AbortWithStatus(404)
@@ -461,9 +462,9 @@ func simPostUserFllws(c *gin.Context) {
 
 		c.String(204, "")
 
-	} else if unfollow != "" {
+	} else if body.Unfollow != "" {
 
-		unfollow_user_id, err := getUserId(username)
+		unfollow_user_id, err := getUserId(body.Unfollow)
 		if err != nil {
 			log.Fatal(err)
 			c.AbortWithStatus(404)
@@ -515,7 +516,7 @@ func init() {
 }
 
 func main() {
-	database.ConnectToDatabase()
+	database.ConnectToTestDatabase()
 	database.MigrateEntities()
 
 	router := setupRouter()
