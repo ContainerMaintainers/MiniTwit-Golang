@@ -43,6 +43,12 @@ func ping(c *gin.Context) {
 	})
 }
 
+func timeline(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"everything": "yep",
+	})
+}
+
 func public(c *gin.Context) { //Displays the latest messages of all users
 
 	var messages []entities.Message
@@ -272,6 +278,7 @@ func setupRouter() *gin.Engine {
 	router.LoadHTMLGlob("templates/*")
 
 	router.GET("/ping", ping)
+	router.GET("/", timeline)
 	router.GET("/public", public)
 	router.GET("/:username", username)
 	router.POST("/:username/follow", usernameFollow)
