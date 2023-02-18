@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"strconv"
@@ -17,7 +18,10 @@ import (
 
 const Per_page int = 30
 
-var latest = 0
+var (
+	latest   = 0
+	testFlag = flag.Bool("t", false, "Wether or not to use test database")
+)
 
 func getUserId(username string) (uint, error) { //Convenience method to look up the id for a username.
 
@@ -516,7 +520,15 @@ func init() {
 }
 
 func main() {
-	database.ConnectToTestDatabase()
+
+	flag.Parse()
+
+	if *testFlag {
+		database.ConnectToTestDatabase()
+	} else {
+		database.ConnectToDatabase()
+	}
+
 	database.MigrateEntities()
 
 	router := setupRouter()
