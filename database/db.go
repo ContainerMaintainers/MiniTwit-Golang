@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	"os"
-	"log"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 
@@ -39,9 +38,6 @@ func MigrateEntities() {
 
 func SeedDatabase() {
 	for _, seed := range AllSeeds() {
-		err := seed.Run(DB)
-		if err != nil {
-			log.Fatalf("Error when seeding database with the following seed: %s\nError message: %s", seed.SeedName, err)
-		}
+		seed.Run(DB)
 	}
 }
