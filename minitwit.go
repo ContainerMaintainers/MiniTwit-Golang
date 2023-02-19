@@ -221,6 +221,12 @@ func loginf(c *gin.Context) { //Logs the user in.
 
 }
 
+func logoutf(c *gin.Context) {
+	log.Printf("You were logged in")
+	//clear session user
+	c.Redirect(200, "/")
+}
+
 // ENDPOINT: POST /register
 func register(c *gin.Context) {
 
@@ -553,6 +559,7 @@ func setupRouter() *gin.Engine {
 	router.POST("/register", register)
 	router.POST("/add_message", addMessage)
 	router.POST("/login", loginf)
+	router.PUT("/logout", logoutf)
 
 	// SIM ENDPOINTS:
 
