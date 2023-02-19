@@ -128,26 +128,28 @@ func TestLoginLogout(t *testing.T) {
 	assert.Contains(t, w2.Body.String(), "You were logged out")
 
 	w3 := login("user1", "wrongpassword")
-	assert.Contains(t, w3.Body.String, "Invalid password")
+	assert.Contains(t, w3.Body.String(), "Invalid password")
 
 	w4 := login("user2", "wrongpassword")
-	assert.Contains(t, w4.Body.String, "Invalid username")
+	assert.Contains(t, w4.Body.String(), "Invalid username")
 }
 
 func TestMessageRecording(t *testing.T) {
-	register_and_login("foo", "default")
+	w1 := register_and_login("foo", "default")
+	assert.Contains(t, w1.Body.String(), "You were logged in")
 
-	w1 := add_message("test message 1")
-	assert.Contains(t, w1.Body.String, "Your message was recorded")
+	w2 := add_message("test message 1")
+	assert.Contains(t, w2.Body.String(), "Your message was recorded")
 
-	w2 := add_message("<test message 2>")
-	assert.Contains(t, w2.Body.String, "Your message was recorded")
+	w3 := add_message("<test message 2>")
+	assert.Contains(t, w3.Body.String(), "Your message was recorded")
 
-	w3 := httptest.NewRecorder()
+	w4 := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/", nil)
-	router.ServeHTTP(w3, req)
-	assert.Contains(t, w3.Body.String, "test message 1")
-	assert.Contains(t, w3.Body.String, "<test message 2>") // OR: "&lt;test message 2&gt"
+	router.ServeHTTP(w4, req)
+	log.Println(w4.Body.String())
+	assert.Contains(t, w4.Body.String(), "test message 1")
+	assert.Contains(t, w4.Body.String(), "\\u003ctest message 2\\u003e") // OR: "&lt;test message 2&gt"
 }
 
 func TestTimeline(t *testing.T) {
@@ -160,46 +162,46 @@ func TestTimeline(t *testing.T) {
 	w1 := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/public", nil)
 	router.ServeHTTP(w1, req)
-	assert.Contains(t, w1.Body.String, "the message by foo")
-	assert.Contains(t, w1.Body.String, "the message by bar")
+	assert.Contains(t, w1.Body.String(), "the message by foo")
+	assert.Contains(t, w1.Body.String(), "the message by bar")
 
 	w2 := httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/", nil)
 	router.ServeHTTP(w2, req)
-	assert.NotContains(t, w2.Body.String, "the message by foo")
-	assert.Contains(t, w2.Body.String, "the message by bar")
+	assert.NotContains(t, w2.Body.String(), "the message by foo")
+	assert.Contains(t, w2.Body.String(), "the message by bar")
 
 	w3 := httptest.NewRecorder()
-	req, _ = http.NewRequest("GET", "/foo/follow", nil)
+	req, _ = http.NewRequest("POST", "/foo/follow", nil)
 	router.ServeHTTP(w3, req)
-	assert.Contains(t, w3.Body.String, "You are now following \"foo\"") // OR: "You are now following &#34;foo&#34;"
+	assert.Contains(t, w3.Body.String(), "You are now following \"foo\"") // OR: "You are now following &#34;foo&#34;"
 
 	w4 := httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/", nil)
 	router.ServeHTTP(w4, req)
-	assert.Contains(t, w4.Body.String, "the message by foo")
-	assert.Contains(t, w4.Body.String, "the message by bar")
+	assert.Contains(t, w4.Body.String(), "the message by foo")
+	assert.Contains(t, w4.Body.String(), "the message by bar")
 
 	w5 := httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/bar", nil)
 	router.ServeHTTP(w5, req)
-	assert.NotContains(t, w5.Body.String, "the message by foo")
-	assert.Contains(t, w5.Body.String, "the message by bar")
+	assert.NotContains(t, w5.Body.String(), "the message by foo")
+	assert.Contains(t, w5.Body.String(), "the message by bar")
 
 	w6 := httptest.NewRecorder()
-	req, _ = http.NewRequest("GET", "/fpo", nil)
+	req, _ = http.NewRequest("GET", "/foo", nil)
 	router.ServeHTTP(w6, req)
-	assert.Contains(t, w6.Body.String, "the message by foo")
-	assert.NotContains(t, w6.Body.String, "the message by bar")
+	assert.Contains(t, w6.Body.String(), "the message by foo")
+	assert.NotContains(t, w6.Body.String(), "the message by bar")
 
 	w7 := httptest.NewRecorder()
-	req, _ = http.NewRequest("GET", "/foo/funollow", nil)
+	req, _ = http.NewRequest("DELETE", "/foo/unfollow", nil)
 	router.ServeHTTP(w7, req)
-	assert.Contains(t, w7.Body.String, "You are no longer following \"foo\"") // OR: "You are no longer following &#34;foo&#34;"
+	assert.Contains(t, w7.Body.String(), "You are no longer following \"foo\"") // OR: "You are no longer following &#34;foo&#34;"
 
 	w8 := httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/", nil)
 	router.ServeHTTP(w8, req)
-	assert.NotContains(t, w8.Body.String, "the message by foo")
-	assert.Contains(t, w8.Body.String, "the message by bar")
+	assert.NotContains(t, w8.Body.String(), "the message by foo")
+	assert.Contains(t, w8.Body.String(), "the message by bar")
 }

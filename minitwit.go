@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -21,6 +22,7 @@ const Per_page int = 30
 var (
 	latest   = 0
 	testFlag = flag.Bool("t", false, "Wether or not to use test database")
+	user     = -1
 )
 
 func getUserId(username string) (uint, error) { //Convenience method to look up the id for a username.
@@ -56,9 +58,26 @@ func ping(c *gin.Context) {
 // ENDPOINT: GET /
 func timeline(c *gin.Context) {
 
-	// Temporarily redirect to the public endpoint
-	public(c)
+	//check if there exists a session user, if not, return all messages
+	// For now just reuse the same endpoint handler as /public
+	if user == -1 {
+		public(c)
+		return
+	}
 
+	var messages []entities.Message
+
+	if err := database.DB.Table("messages").
+		Joins("left join followers on messages.author_id = followers.whom_id").
+		Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
+		Limit(Per_page).Find(&messages).Error; err != nil { // ORDER BY DATE
+		log.Fatal(err)
+	}
+
+	c.JSON(200, gin.H{
+		"messages": messages,
+		"user":     user,
+	})
 }
 
 // ENDPOINT: GET /public
@@ -68,6 +87,7 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 
 	if err := database.DB.Where("Flagged = false").Order("Pub_Date desc").Limit(Per_page).Find(&messages).Error; err != nil {
 		c.AbortWithStatus(400)
+		return
 	}
 
 	c.JSON(200, gin.H{
@@ -91,6 +111,7 @@ func username(c *gin.Context) { //Displays a user's tweets
 
 	if err := database.DB.Where("author_id = ?", userID).Limit(Per_page).Find(&messagesFromUser).Error; err != nil {
 		c.AbortWithStatus(404)
+		return
 	}
 
 	c.JSON(200, gin.H{
@@ -103,10 +124,14 @@ func username(c *gin.Context) { //Displays a user's tweets
 func usernameFollow(c *gin.Context) { //Adds the current user as follower of the given user
 
 	//check if there exists a session user, if not, return error 401, try c.AbortWithStatus(401)
+	if user == -1 {
+		c.AbortWithStatus(401)
+		return
+	}
 
 	username := c.Param("username")
 
-	who := uint(4) // SHOULD GET SESSION USER ID
+	who := uint(user) // SHOULD GET SESSION USER ID
 
 	whom, err := getUserId(username)
 
@@ -124,20 +149,25 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"follower": follow,
-	})
+	// c.JSON(200, gin.H{
+	// 	"follower": follow,
+	// })
+	c.String(200, fmt.Sprintf("You are now following \"%s\"", username))
 
 }
 
-// ENDPOINT: POST /:username/unfollow
+// ENDPOINT: DELETE /:username/unfollow
 func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of the given user
 
 	//check if there exists a session user, if not, return error 401, try c.AbortWithStatus(401)
+	if user == -1 {
+		c.AbortWithStatus(401)
+		return
+	}
 
 	username := c.Param("username")
 
-	who := uint(4) // SHOULD GET SESSION USER ID
+	who := uint(user) // SHOULD GET SESSION USER ID
 
 	whom, err := getUserId(username)
 
@@ -145,6 +175,7 @@ func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of t
 		c.Status(404)
 		return
 	}
+
 	unfollow := entities.Follower{
 		Who_ID:  who, // !
 		Whom_ID: whom,
@@ -155,9 +186,10 @@ func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of t
 		return
 	}
 
-	c.JSON(204, gin.H{
-		"follower": unfollow,
-	})
+	// c.JSON(204, gin.H{
+	// 	"follower": unfollow,
+	// })
+	c.String(200, fmt.Sprintf("You are no longer following \"%s\"", username)) // Had to make it 200 to satisfy tests for some reason
 
 }
 
@@ -165,6 +197,10 @@ func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of t
 func addMessage(c *gin.Context) { //Registers a new message for the user.
 
 	//check if there exists a session user, if not, return error 401, try c.AbortWithStatus(401)
+	if user == -1 {
+		c.AbortWithStatus(401)
+		return
+	}
 
 	var body struct {
 		Text string `json:"text"`
@@ -173,7 +209,7 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	c.BindJSON(&body)
 
 	message := entities.Message{
-		Author_id: 4, // AUTHOR ID SHOULD GET SESSION USER ID
+		Author_id: uint(user), // AUTHOR ID SHOULD GET SESSION USER ID
 		Text:      body.Text,
 		Pub_Date:  uint(time.Now().Unix()),
 		Flagged:   false,
@@ -187,7 +223,10 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	}
 
 	//redirect to timeline ("/")
-	c.Redirect(200, "/") // For some reason, this returns error 500, but I assume it's because the path doesn't exist yet?
+	//c.Redirect(200, "/") // For some reason, this returns error 500, but I assume it's because the path doesn't exist yet?
+	// Temporarily dont redirect
+	c.String(200, "Your message was recorded")
+
 }
 
 // ENDPOINT: POST /login
@@ -208,24 +247,40 @@ func loginf(c *gin.Context) { //Logs the user in.
 		error = "Invalid username"
 	} else if _, err := checkPasswordHash(body.Username, body.Password); err != nil {
 		error = "Invalid password"
-	} else {
-		//give message "You were logged in."
-		log.Printf("You were logged in")
-		//set session user to body.Username
-
-		//redirect to timeline ("/")
-		c.Redirect(200, "/")
-
 	}
 
-	c.String(400, error)
+	if error == "" {
+		//give message "You were logged in."
+		//set session user to body.Username
+
+		// Until session stuff is working, just keep track of the user through a global variable
+		// In this case the id is replaced with the username
+		if userID, err := getUserId(body.Username); err != nil {
+			user = -1
+		} else {
+			user = int(userID)
+		}
+
+		//redirect to timeline ("/")
+		//c.Redirect(200, "/")
+
+		// Temporarily dont redirect
+		c.String(200, "You were logged in")
+
+	} else {
+		c.String(400, error)
+	}
 
 }
 
+// ENDPOINT: PUT /logout
 func logoutf(c *gin.Context) {
-	log.Printf("You were logged in")
 	//clear session user
-	c.Redirect(200, "/")
+	user = -1
+
+	//c.Redirect(200, "/")
+	// Temporarily don't redirect
+	c.String(200, "You were logged out")
 }
 
 // ENDPOINT: POST /register
@@ -252,7 +307,9 @@ func register(c *gin.Context) {
 		error = "The two passwords do not match"
 	} else if id, _ := getUserId(body.Username); id != 0 {
 		error = "The username is already taken"
-	} else {
+	}
+
+	if error == "" {
 		user := entities.User{
 			Username: body.Username,
 			PW_Hash:  body.Password, // UPDATE SO PASSWORD IS HASHED
@@ -261,9 +318,11 @@ func register(c *gin.Context) {
 
 		database.DB.Create(&user)
 
-	}
+		c.String(200, "You were successfully registered and can login now")
 
-	c.String(200, error)
+	} else {
+		c.String(400, error)
+	}
 
 }
 
@@ -358,7 +417,7 @@ func simMsgs(c *gin.Context) {
 	if err := database.DB.Table("messages").
 		Joins("join users on messages.author_id = users.id").
 		Where("messages.flagged = ?", false).Order("messages.pub_date desc").
-		Limit(num_of_msgs).Find(&messages); err != nil {
+		Limit(num_of_msgs).Find(&messages).Error; err != nil {
 		log.Fatal(err)
 	}
 
@@ -429,7 +488,7 @@ func simGetUserMsg(c *gin.Context) {
 	if err := database.DB.Table("messages").
 		Joins("join users on messages.author_id = users.id").
 		Where("messages.flagged = ? AND users.username = ?", false, username).Order("messages.pub_date desc").
-		Limit(num_of_msgs).Find(&messages); err != nil {
+		Limit(num_of_msgs).Find(&messages).Error; err != nil {
 		log.Fatal(err)
 	}
 
@@ -452,6 +511,7 @@ func simGetUserFllws(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 		c.AbortWithStatus(404)
+		return
 	}
 
 	num_of_followers, err := strconv.Atoi(c.Request.Header.Get("no"))
@@ -468,7 +528,7 @@ func simGetUserFllws(c *gin.Context) {
 	if err := database.DB.Table("followers").
 		Joins("join users on followers.whom_id = users.id").
 		Where("followers.who_id = ?", user_id).
-		Limit(num_of_followers).Find(&usernames); err != nil {
+		Limit(num_of_followers).Find(&usernames).Error; err != nil {
 		log.Fatal(err)
 	}
 
@@ -505,6 +565,7 @@ func simPostUserFllws(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 		c.AbortWithStatus(404)
+		return
 	}
 
 	if body.Follow != "" {
@@ -530,6 +591,7 @@ func simPostUserFllws(c *gin.Context) {
 		if err != nil {
 			log.Fatal(err)
 			c.AbortWithStatus(404)
+			return
 		}
 
 		follower := entities.Follower{
@@ -560,7 +622,7 @@ func setupRouter() *gin.Engine {
 	router.POST("/register", register)
 	router.POST("/add_message", addMessage)
 	router.POST("/login", loginf)
-	router.PUT("/logout", logoutf)
+	router.GET("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
 
 	// SIM ENDPOINTS:
 
