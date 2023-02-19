@@ -81,8 +81,8 @@ func CreateUser(db *gorm.DB, userID uint, username string, email string, pw stri
 
 func CreateMessage(db *gorm.DB, message uint, author uint, text string, date uint, flagged bool) {
 	db.Create(&entities.Message{
-					Message_id: message,
-					Author_id: author, 
+					Message_ID: message,
+					Author_ID: author, 
 					Text: text, 
 					Pub_Date: date, 
 					Flagged: flagged})
