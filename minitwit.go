@@ -55,9 +55,10 @@ func ping(c *gin.Context) {
 
 // ENDPOINT: GET /
 func timeline(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"everything": "yep",
-	})
+
+	// Temporarily redirect to the public endpoint
+	public(c)
+
 }
 
 // ENDPOINT: GET /public
@@ -539,9 +540,9 @@ func simPostUserFllws(c *gin.Context) {
 		database.DB.Delete(&follower)
 
 		c.String(204, "")
+	} else {
+		c.String(400, "")
 	}
-
-	c.String(400, "")
 
 }
 
