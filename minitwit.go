@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	//"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,10 +12,13 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
+	"github.com/gomodule/redigo/redis"
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 )
+
+var conn redis.Conn
 
 const Per_page int = 30
 
@@ -164,6 +168,11 @@ func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of t
 func addMessage(c *gin.Context) { //Registers a new message for the user.
 
 	//check if there exists a session user, if not, return error 401, try c.AbortWithStatus(401)
+	username, err := redis.String(conn.Do("HGET", "session:1", "username"))
+	checkError(err)
+	if username == "" {
+		c.AbortWithStatus(401)
+	}
 
 	var body struct {
 		Text string `json:"text"`
@@ -211,7 +220,15 @@ func loginf(c *gin.Context) { //Logs the user in.
 		//give message "You were logged in."
 		log.Printf("You were logged in")
 		//set session user to body.Username
-
+		_, err = redis.String(conn.Do("HSET", "session:1", "username", body.Username))
+		if err != nil {
+			log.Fatal(err)
+		}
+		userId, _ := getUserId(body.Username)
+		_, err = redis.String(conn.Do("HSET", "session:1", "id", int(userId)))
+		if err != nil {
+			log.Fatal(err)
+		}
 		//redirect to timeline ("/")
 		c.Redirect(200, "/")
 
@@ -572,6 +589,11 @@ func init() {
 	initializers.LoadEnvVars()
 }
 
+func checkError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 func main() {
 
 	flag.Parse()
@@ -584,6 +606,32 @@ func main() {
 
 	database.MigrateEntities()
 
+	con, err := redis.Dial("tcp", "redis:6379")
+	checkError(err)
+	defer con.Close()
+
+	_, err = conn.Do(
+		"HMSET",
+		"session:1",
+		"id",
+		0,
+		"username",
+		nil,
+	)
+	checkError(err)
+	// title, err := redis.String(con.Do("HGET", "session:1", "username"))
+	// checkError(err)
+	// fmt.Println("title: ", title)
+	// id, err := redis.Int(con.Do("HGET", "session:1", "id"))
+	// checkError(err)
+	// fmt.Println("id: ", id)
+	// _, err = redis.Int(con.Do("HSET", "session:1", "id", 3))
+	// checkError(err)
+	// id, err = redis.Int(con.Do("HGET", "session:1", "id"))
+	// checkError(err)
+	// fmt.Println("id: ", id)
+
+	conn = con
 	router := setupRouter()
 	router.Run() // port 8080
 }
