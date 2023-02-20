@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -18,7 +19,7 @@ func ConnectToDatabase() {
 	DB, err = gorm.Open(postgres.Open(dsnString), &gorm.Config{})
 
 	if err != nil {
-		fmt.Println("error connecting to database ", err)
+		fmt.Println("error connecting to database %s", err)
 	}
 }
 
@@ -33,4 +34,10 @@ func ConnectToTestDatabase() {
 
 func MigrateEntities() {
 	DB.AutoMigrate(&entities.User{}, &entities.Message{}, &entities.Follower{})
+}
+
+func SeedDatabase() {
+	for _, seed := range AllSeeds() {
+		seed.Run(DB)
+	}
 }

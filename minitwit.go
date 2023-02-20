@@ -27,6 +27,7 @@ func init() {
 	initializers.LoadEnvVars()
 	database.ConnectToDatabase()
 	database.MigrateEntities()
+	database.SeedDatabase()
 }
 
 func main() {
