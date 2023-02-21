@@ -1,6 +1,6 @@
 package entities
 
 type Follower struct {
-	Who_ID  uint
-	Whom_ID uint
+	Who_ID  uint `gorm:"primaryKey"`
+	Whom_ID uint `gorm:"primaryKey"`
 }
