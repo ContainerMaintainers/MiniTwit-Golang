@@ -8,7 +8,7 @@ import (
 
 type Seed struct {
 	SeedName string
-	Run func(*gorm.DB)
+	Run      func(*gorm.DB)
 }
 
 func AllSeeds() []Seed {
@@ -16,37 +16,37 @@ func AllSeeds() []Seed {
 		Seed{
 			SeedName: "CreateUser1",
 			Run: func(db *gorm.DB) {
-				CreateUser(db, 1, "user1", "user1@gmail.com", "user1iscool")
+				CreateUser(db, "user1", "user1@gmail.com", "user1iscool")
 			},
 		},
 		Seed{
 			SeedName: "CreateUser2",
 			Run: func(db *gorm.DB) {
-				CreateUser(db, 2, "user2", "user2@gmail.com", "user2iscool")
+				CreateUser(db, "user2", "user2@gmail.com", "user2iscool")
 			},
 		},
 		Seed{
 			SeedName: "CreateUser3",
 			Run: func(db *gorm.DB) {
-				CreateUser(db, 3, "user3", "user3@gmail.com", "user3iscool")
+				CreateUser(db, "user3", "user3@gmail.com", "user3iscool")
 			},
 		},
 		Seed{
 			SeedName: "CreateMessage1",
 			Run: func(db *gorm.DB) {
-				CreateMessage(db, 1, 1, "Hello World! From user1", 123456, false)
+				CreateMessage(db, 1, "Hello World! From user1", 123456, false)
 			},
 		},
 		Seed{
 			SeedName: "CreateMessage2",
 			Run: func(db *gorm.DB) {
-				CreateMessage(db, 2, 2, "Hello World! From user2", 123456, false)
+				CreateMessage(db, 2, "Hello World! From user2", 123456, false)
 			},
 		},
 		Seed{
 			SeedName: "CreateMessage3",
 			Run: func(db *gorm.DB) {
-				CreateMessage(db, 3, 3, "Hello World! From user3", 123456, false)
+				CreateMessage(db, 3, "Hello World! From user3", 123456, false)
 			},
 		},
 		Seed{
@@ -70,26 +70,23 @@ func AllSeeds() []Seed {
 	}
 }
 
-
-func CreateUser(db *gorm.DB, userID uint, username string, email string, pw string) {
+func CreateUser(db *gorm.DB, username string, email string, pw string) {
 	db.Create(&entities.User{
-					User_ID: userID, 
-					Username: username, 
-					Email: email, 
-					PW_Hash: pw})
+		Username: username,
+		Email:    email,
+		PW_Hash:  pw})
 }
 
-func CreateMessage(db *gorm.DB, message uint, author uint, text string, date uint, flagged bool) {
+func CreateMessage(db *gorm.DB, author uint, text string, date uint, flagged bool) {
 	db.Create(&entities.Message{
-					Message_ID: message,
-					Author_ID: author, 
-					Text: text, 
-					Pub_Date: date, 
-					Flagged: flagged})
+		Author_id: author,
+		Text:      text,
+		Pub_Date:  date,
+		Flagged:   flagged})
 }
 
 func CreateFollower(db *gorm.DB, who uint, whom uint) {
 	db.Create(&entities.Follower{
-					Who_ID: who,
-					Whom_ID: whom})
+		Who_ID:  who,
+		Whom_ID: whom})
 }
