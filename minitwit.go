@@ -12,6 +12,8 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
+	"github.com/gin-contrib/sessions"
+	gormsessions "github.com/gin-contrib/sessions/gorm"
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
@@ -232,6 +234,12 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 // ENDPOINT: POST /login
 func loginf(c *gin.Context) { //Logs the user in.
 	//check if there exists a session user, if yes, redirect to timeline ("/")
+	session := sessions.Default(c)
+
+	if session.Get("id") != nil {
+		// REDIRECT
+		// c.Redirect(303, "/")
+	}
 
 	var body struct {
 		Username string `json:"username"`
@@ -256,15 +264,17 @@ func loginf(c *gin.Context) { //Logs the user in.
 		// Until session stuff is working, just keep track of the user through a global variable
 		// In this case the id is replaced with the username
 		if userID, err := getUserId(body.Username); err != nil {
-			user = -1
+			session.Clear()
+			session.Save()
 		} else {
-			user = int(userID)
+			session.Set("id", userID)
+			session.Save()
 		}
 
 		//redirect to timeline ("/")
-		//c.Redirect(200, "/")
 
 		// Temporarily dont redirect
+		//c.Redirect(302, "/")
 		c.String(200, "You were logged in")
 
 	} else {
@@ -276,9 +286,11 @@ func loginf(c *gin.Context) { //Logs the user in.
 // ENDPOINT: PUT /logout
 func logoutf(c *gin.Context) {
 	//clear session user
-	user = -1
+	session := sessions.Default(c)
+	session.Clear()
+	session.Save()
 
-	//c.Redirect(200, "/")
+	//c.Redirect(302, "/")
 	// Temporarily don't redirect
 	c.String(200, "You were logged out")
 }
@@ -612,6 +624,9 @@ func setupRouter() *gin.Engine {
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
+
+	store := gormsessions.NewStore(database.DB, true, []byte("secret"))
+	router.Use(sessions.Sessions("session", store))
 
 	router.GET("/ping", ping)
 	router.GET("/", timeline)
