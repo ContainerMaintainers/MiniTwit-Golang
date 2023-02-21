@@ -77,7 +77,7 @@ func register_and_login(username string, password string) *httptest.ResponseReco
 
 func logout() *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/logout", nil)
+	req, _ := http.NewRequest("PUT", "/logout", nil)
 	router.ServeHTTP(w, req)
 	return w
 }

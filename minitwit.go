@@ -622,7 +622,7 @@ func setupRouter() *gin.Engine {
 	router.POST("/register", register)
 	router.POST("/add_message", addMessage)
 	router.POST("/login", loginf)
-	router.GET("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
+	router.PUT("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
 
 	// SIM ENDPOINTS:
 
