@@ -4,23 +4,19 @@
 <div class=page>
   <h1>MiniTwit</h1>
   <div class=navigation>
-  {% if .loggedin %}
+  {{ if .loggedin }} <!-- needs gin equivalent to g.user. Is it .user? -->
     <a href="/">my timeline</a> |
-    <a href="/public_timeline">public timeline</a> |
+    <a href="/public">public timeline</a> |
     <a href="/logout">sign out</a>
-  {% else %}
-    <a href="/public_timeline">public timeline</a> |
+  {{ else }}
+    <a href="/public">public timeline</a> |
     <a href="/register">sign up</a> |
     <a href="/login">sign in</a>
-  {% endif %}
+  {{ endif }}
   </div>
   {% with flashes = .flashes %}
     {% if flashes %}
-      <ul class=flashes>
-      {% for . in flashes %}
-        <li>{{ . }}
-      {% endfor %}
-      </ul>
+      {{range .flashes}}{{.}}{{end}}
     {% endif %}
   {% endwith %}
   <div class=body>
