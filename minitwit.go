@@ -350,9 +350,11 @@ func notReqFromSimulator(request *http.Request) gin.H {
 }
 
 func updateLatest(request *http.Request) {
-	latest_value, err := strconv.Atoi(request.Header.Get("latest"))
+	latest_value, err := strconv.Atoi(request.URL.Query().Get("latest"))
 	if latest_value != -1 && err == nil {
 		latest = latest_value
+	} else if err != nil {
+		log.Print("During updateLatest(): ", err)
 	}
 }
 
@@ -421,9 +423,11 @@ func simMsgs(c *gin.Context) {
 
 	var messages []MessageUser
 
-	num_of_msgs, err := strconv.Atoi(c.Request.Header.Get("no"))
+	num_of_msgs, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
-		log.Fatal(err)
+		log.Print("During /sim/msgs", err)
+		c.AbortWithStatus(400)
+		return
 	}
 
 	if err := database.DB.Table("messages").
@@ -492,9 +496,11 @@ func simGetUserMsg(c *gin.Context) {
 
 	var messages []MessageUser
 
-	num_of_msgs, err := strconv.Atoi(c.Request.Header.Get("no"))
+	num_of_msgs, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
-		log.Fatal(err)
+		log.Print("During /sim/msgs/:username ", err)
+		c.AbortWithStatus(400)
+		return
 	}
 
 	if err := database.DB.Table("messages").
@@ -526,9 +532,10 @@ func simGetUserFllws(c *gin.Context) {
 		return
 	}
 
-	num_of_followers, err := strconv.Atoi(c.Request.Header.Get("no"))
+	num_of_followers, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
 		num_of_followers = 100
+		log.Print("During /sim/fllws/:username ", err)
 	}
 
 	type Username struct {
@@ -537,8 +544,8 @@ func simGetUserFllws(c *gin.Context) {
 
 	var usernames []Username
 
-	if err := database.DB.Table("followers").
-		Joins("join users on followers.whom_id = users.id").
+	if err := database.DB.Table("users").
+		Joins("join followers on followers.whom_id = users.id").
 		Where("followers.who_id = ?", user_id).
 		Limit(num_of_followers).Find(&usernames).Error; err != nil {
 		log.Fatal(err)
