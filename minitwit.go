@@ -58,7 +58,7 @@ func ping(c *gin.Context) {
 // ENDPOINT: GET /
 func timeline(c *gin.Context) {
 
-	//check if there exists a session user, if not, return all messages
+	// check if there exists a session user, if not, return all messages
 	// For now just reuse the same endpoint handler as /public
 	if user == -1 {
 		public(c)
@@ -74,9 +74,8 @@ func timeline(c *gin.Context) {
 		log.Fatal(err)
 	}
 
-	c.JSON(200, gin.H{
+	c.HTML(http.StatusOK, "index.html", gin.H{
 		"messages": messages,
-		"user":     user,
 	})
 }
 
@@ -90,7 +89,7 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 		return
 	}
 
-	c.JSON(200, gin.H{
+	c.HTML(http.StatusOK, "index.html", gin.H{
 		"messages": messages,
 	})
 }

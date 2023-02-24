@@ -1,6 +1,20 @@
 <!doctype html>
-<title>Welcome | MiniTwit</title>
-<link rel=stylesheet type=text/css href="../static/style.css">
-<div class=page>
-  <h1>MiniTwit</h1>
+<html>
+
+<head>
+  <title>Welcome | MiniTwit</title>
+  <link rel=stylesheet type=text/css href="../static/style.css">
+</head>
+<body>
+    <h1>MiniTwit</h1>
+    <ul>
+      {{ range .messages }}
+        <li>{{ .Text }} - {{ .Author_id }}</li>
+      {{ end }}
+    </ul>
+</body>
+
+<div class=footer>
+  MiniTwit &mdash; A Gin Web Application
 </div>
+</html>
