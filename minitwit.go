@@ -14,7 +14,6 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 	"github.com/gin-contrib/sessions"
 	gormsessions "github.com/gin-contrib/sessions/gorm"
-	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 )
@@ -415,7 +414,7 @@ func simMsgs(c *gin.Context) {
 	}
 
 	type MessageUser struct {
-		gorm.Model
+		ID       uint   `json:"ID"`
 		Text     string `json:"content"`
 		Pub_Date uint   `json:"pub_date"`
 		Username string `json:"user"`
@@ -433,7 +432,9 @@ func simMsgs(c *gin.Context) {
 	if err := database.DB.Table("messages").
 		Joins("join users on messages.author_id = users.id").
 		Where("messages.flagged = ?", false).Order("messages.pub_date desc").
-		Limit(num_of_msgs).Find(&messages).Error; err != nil {
+		Limit(num_of_msgs).
+		Select("messages.ID, messages.text, messages.pub_date, users.username").
+		Find(&messages).Error; err != nil {
 		log.Fatal(err)
 	}
 
@@ -488,7 +489,7 @@ func simGetUserMsg(c *gin.Context) {
 	username := c.Param("username")
 
 	type MessageUser struct {
-		gorm.Model
+		ID       uint   `json:"id"`
 		Text     string `json:"content"`
 		Pub_Date uint   `json:"pub_date"`
 		Username string `json:"user"`
@@ -506,7 +507,9 @@ func simGetUserMsg(c *gin.Context) {
 	if err := database.DB.Table("messages").
 		Joins("join users on messages.author_id = users.id").
 		Where("messages.flagged = ? AND users.username = ?", false, username).Order("messages.pub_date desc").
-		Limit(num_of_msgs).Find(&messages).Error; err != nil {
+		Limit(num_of_msgs).
+		Select("messages.ID, messages.text, messages.pub_date, users.username").
+		Find(&messages).Error; err != nil {
 		log.Fatal(err)
 	}
 
@@ -613,12 +616,15 @@ func simPostUserFllws(c *gin.Context) {
 			return
 		}
 
+		log.Printf("user_id: %d", user_id)
+		log.Printf("unfollow_user_id: %d", unfollow_user_id)
+
 		follower := entities.Follower{
 			Who_ID:  user_id,
 			Whom_ID: unfollow_user_id,
 		}
 
-		database.DB.Delete(&follower)
+		database.DB.Where("whom_id = ? and who_id = ?", follower.Whom_ID, follower.Who_ID).Delete(&follower)
 
 		c.String(204, "")
 	} else {
