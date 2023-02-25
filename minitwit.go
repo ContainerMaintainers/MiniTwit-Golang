@@ -657,6 +657,7 @@ func main() {
 	}
 
 	database.MigrateEntities()
+	database.SeedDatabase()
 
 	router := setupRouter()
 	router.Run() // port 8080
