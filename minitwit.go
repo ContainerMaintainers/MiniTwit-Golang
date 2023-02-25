@@ -7,6 +7,7 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
@@ -280,6 +281,16 @@ func logoutf(c *gin.Context) {
 	c.String(200, "You were logged out")
 }
 
+func salt_pwd(pwd []byte) string {
+	// hashes the given password
+	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+	if err != nil {
+		log.Fatal("The given password could not be hashed. ", err)
+	}
+
+	return string(hash)
+}
+
 // ENDPOINT: POST /register
 func register(c *gin.Context) {
 
@@ -313,7 +324,7 @@ func register(c *gin.Context) {
 	if error == "" {
 		user := entities.User{
 			Username: body.Username,
-			Password: body.Password, // UPDATE SO PASSWORD IS HASHED
+			Password: salt_pwd([]byte(body.Password)),
 			Email:    body.Email,
 		}
 
