@@ -292,7 +292,11 @@ func register(c *gin.Context) {
 		Email     string `json:"email"`
 	}
 
-	c.BindJSON(&body)
+	err := c.BindJSON(&body)
+
+	if err != nil {
+		log.Fatal("error occured when binding json to the context: ", err)
+	}
 
 	error := ""
 
@@ -311,7 +315,7 @@ func register(c *gin.Context) {
 	if error == "" {
 		user := entities.User{
 			Username: body.Username,
-			PW_Hash:  body.Password, // UPDATE SO PASSWORD IS HASHED
+			Password: body.Password, // UPDATE SO PASSWORD IS HASHED
 			Email:    body.Email,
 		}
 
