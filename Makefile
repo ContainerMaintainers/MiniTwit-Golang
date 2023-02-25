@@ -5,4 +5,7 @@ stop:
 	docker compose down
 
 fresh_start:
-	docker compose up --build 
+	docker compose up --build
+
+prune_docker:
+	docker system prune -a
