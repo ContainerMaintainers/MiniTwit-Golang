@@ -12,7 +12,6 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
-	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 )
@@ -337,9 +336,11 @@ func notReqFromSimulator(request *http.Request) gin.H {
 }
 
 func updateLatest(request *http.Request) {
-	latest_value, err := strconv.Atoi(request.Header.Get("latest"))
+	latest_value, err := strconv.Atoi(request.URL.Query().Get("latest"))
 	if latest_value != -1 && err == nil {
 		latest = latest_value
+	} else if err != nil {
+		log.Print("During updateLatest(): ", err)
 	}
 }
 
@@ -400,7 +401,7 @@ func simMsgs(c *gin.Context) {
 	}
 
 	type MessageUser struct {
-		gorm.Model
+		ID       uint   `json:"ID"`
 		Text     string `json:"content"`
 		Pub_Date uint   `json:"pub_date"`
 		Username string `json:"user"`
@@ -408,15 +409,19 @@ func simMsgs(c *gin.Context) {
 
 	var messages []MessageUser
 
-	num_of_msgs, err := strconv.Atoi(c.Request.Header.Get("no"))
+	num_of_msgs, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
-		log.Fatal(err)
+		log.Print("During /sim/msgs ", err)
+		c.AbortWithStatus(400)
+		return
 	}
 
 	if err := database.DB.Table("messages").
 		Joins("join users on messages.author_id = users.id").
 		Where("messages.flagged = ?", false).Order("messages.pub_date desc").
-		Limit(num_of_msgs).Find(&messages).Error; err != nil {
+		Limit(num_of_msgs).
+		Select("messages.ID, messages.text, messages.pub_date, users.username").
+		Find(&messages).Error; err != nil {
 		log.Fatal(err)
 	}
 
@@ -471,7 +476,7 @@ func simGetUserMsg(c *gin.Context) {
 	username := c.Param("username")
 
 	type MessageUser struct {
-		gorm.Model
+		ID       uint   `json:"id"`
 		Text     string `json:"content"`
 		Pub_Date uint   `json:"pub_date"`
 		Username string `json:"user"`
@@ -479,15 +484,19 @@ func simGetUserMsg(c *gin.Context) {
 
 	var messages []MessageUser
 
-	num_of_msgs, err := strconv.Atoi(c.Request.Header.Get("no"))
+	num_of_msgs, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
-		log.Fatal(err)
+		log.Print("During /sim/msgs/:username ", err)
+		c.AbortWithStatus(400)
+		return
 	}
 
 	if err := database.DB.Table("messages").
 		Joins("join users on messages.author_id = users.id").
 		Where("messages.flagged = ? AND users.username = ?", false, username).Order("messages.pub_date desc").
-		Limit(num_of_msgs).Find(&messages).Error; err != nil {
+		Limit(num_of_msgs).
+		Select("messages.ID, messages.text, messages.pub_date, users.username").
+		Find(&messages).Error; err != nil {
 		log.Fatal(err)
 	}
 
@@ -513,9 +522,10 @@ func simGetUserFllws(c *gin.Context) {
 		return
 	}
 
-	num_of_followers, err := strconv.Atoi(c.Request.Header.Get("no"))
+	num_of_followers, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
 		num_of_followers = 100
+		log.Print("During /sim/fllws/:username ", err)
 	}
 
 	type Username struct {
@@ -524,8 +534,8 @@ func simGetUserFllws(c *gin.Context) {
 
 	var usernames []Username
 
-	if err := database.DB.Table("followers").
-		Joins("join users on followers.whom_id = users.id").
+	if err := database.DB.Table("users").
+		Joins("join followers on followers.whom_id = users.id").
 		Where("followers.who_id = ?", user_id).
 		Limit(num_of_followers).Find(&usernames).Error; err != nil {
 		log.Fatal(err)
@@ -598,7 +608,7 @@ func simPostUserFllws(c *gin.Context) {
 			Whom_ID: unfollow_user_id,
 		}
 
-		database.DB.Delete(&follower)
+		database.DB.Where("whom_id = ? and who_id = ?", follower.Whom_ID, follower.Who_ID).Delete(&follower)
 
 		c.String(204, "")
 	} else {
