@@ -296,9 +296,9 @@ func register(c *gin.Context) {
 
 	var body struct {
 		Username  string `json:"username"`
+		Email     string `json:"email"`
 		Password  string `json:"password"`
 		Password2 string `json:"password2"`
-		Email     string `json:"email"`
 	}
 
 	err := c.BindJSON(&body)
@@ -324,8 +324,8 @@ func register(c *gin.Context) {
 	if error == "" {
 		user := entities.User{
 			Username: body.Username,
-			Password: salt_pwd([]byte(body.Password)),
 			Email:    body.Email,
+			Password: salt_pwd([]byte(body.Password)),
 		}
 
 		database.DB.Create(&user)
