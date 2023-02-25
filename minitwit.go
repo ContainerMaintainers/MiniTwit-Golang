@@ -236,7 +236,10 @@ func loginf(c *gin.Context) { //Logs the user in.
 		Password string `json:"password"`
 	}
 
-	c.BindJSON(&body)
+	err := c.BindJSON(&body)
+	if err != nil {
+		log.Fatal("error occured when binding json to the context: ", err)
+	}
 
 	error := ""
 
