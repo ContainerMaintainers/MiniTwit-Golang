@@ -74,7 +74,7 @@ func CreateUser(db *gorm.DB, username string, email string, pwd string) {
 	db.Create(&entities.User{
 		Username: username,
 		Email:    email,
-		Password: pwd})
+		Password: entities.Salt_pwd(pwd)})
 }
 
 func CreateMessage(db *gorm.DB, author uint, text string, date uint, flagged bool) {
