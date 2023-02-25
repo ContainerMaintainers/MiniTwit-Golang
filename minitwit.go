@@ -7,7 +7,6 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
@@ -40,7 +39,7 @@ func checkPasswordHash(username string, enteredPW string) (bool, error) {
 
 	hashedEnteredPW := salt_pwd(enteredPW)
 
-	if err := database.DB.Where("Username = ? AND Password = ?", username, hashedEnteredPW).First(&user).Error; err != nil {
+	if err := database.DB.Where("username = ? AND password = ?", username, hashedEnteredPW).First(&user).Error; err != nil {
 		return false, err
 	}
 
@@ -284,16 +283,6 @@ func logoutf(c *gin.Context) {
 	c.String(200, "You were logged out")
 }
 
-func salt_pwd(pwd string) string {
-	// hashes the given password
-	hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
-	if err != nil {
-		log.Fatal("The given password could not be hashed. ", err)
-	}
-
-	return string(hash)
-}
-
 // ENDPOINT: POST /register
 func register(c *gin.Context) {
 
@@ -328,7 +317,7 @@ func register(c *gin.Context) {
 		user := entities.User{
 			Username: body.Username,
 			Email:    body.Email,
-			Password: salt_pwd(body.Password),
+			Password: entities.Salt_pwd(body.Password),
 		}
 
 		database.DB.Create(&user)
@@ -390,7 +379,7 @@ func simRegister(c *gin.Context) {
 	} else {
 		user := entities.User{
 			Username: body.Username,
-			Password: body.Password, // UPDATE SO PASSWORD IS HASHED
+			Password: entities.Salt_pwd(body.Password), // UPDATE SO PASSWORD IS HASHED
 			Email:    body.Email,
 		}
 
