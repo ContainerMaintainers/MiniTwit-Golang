@@ -3,25 +3,23 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
-	"gorm.io/gorm"
-
-	"github.com/gin-gonic/gin"
 )
 
 const Per_page int = 30
 
 var (
 	latest   = 0
-	testFlag = flag.Bool("t", false, "Wether or not to use test database")
+	testFlag = flag.Bool("t", false, "Whether or not to use test database")
 	user     = -1
 )
 
