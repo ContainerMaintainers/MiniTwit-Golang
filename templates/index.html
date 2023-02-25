@@ -1,20 +1,23 @@
 <!doctype html>
-<html>
-
-<head>
-  <title>Welcome | MiniTwit</title>
-  <link rel=stylesheet type=text/css href="../static/style.css">
-</head>
-<body>
-    <h1>MiniTwit</h1>
+<title>Welcome | MiniTwit</title>
+<link rel=stylesheet type=text/css href="../static/style.css">
+<div class=page>
+  <h1>MiniTwit</h1>
+  <div class=navigation>
+    <a href="/public">public timeline</a> |
+    <a href="/register">sign up</a> |
+    <a href="/login">sign in</a>
+  </div>
+  <div class=body>
     <ul>
       {{ range .messages }}
         <li>{{ .Text }} - {{ .Author_id }}</li>
       {{ end }}
     </ul>
-</body>
+  </div>
 
-<div class=footer>
-  MiniTwit &mdash; A Gin Web Application
+  <div class=footer>
+    MiniTwit &mdash; A Gin Web Application
+  </div>
 </div>
 </html>
