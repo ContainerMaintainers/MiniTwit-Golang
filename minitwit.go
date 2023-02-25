@@ -3,25 +3,23 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
-	"gorm.io/gorm"
-
-	"github.com/gin-gonic/gin"
 )
 
 const Per_page int = 30
 
 var (
 	latest   = 0
-	testFlag = flag.Bool("t", false, "Wether or not to use test database")
+	testFlag = flag.Bool("t", false, "Whether or not to use test database")
 	user     = -1
 )
 
@@ -39,9 +37,9 @@ func getUserId(username string) (uint, error) { //Convenience method to look up 
 func checkPasswordHash(username string, enteredPW string) (bool, error) {
 	var user entities.User
 
-	hashedEnteredPW := enteredPW //hash "enteredPW" with hash function we're using
+	hashedEnteredPW := entities.Salt_pwd(enteredPW)
 
-	if err := database.DB.Where("username = ? AND pw_hash = ?", username, hashedEnteredPW).First(&user).Error; err != nil {
+	if err := database.DB.Where("username = ? AND password = ?", username, hashedEnteredPW).First(&user).Error; err != nil {
 		return false, err
 	}
 
@@ -237,7 +235,10 @@ func loginf(c *gin.Context) { //Logs the user in.
 		Password string `json:"password"`
 	}
 
-	c.BindJSON(&body)
+	err := c.BindJSON(&body)
+	if err != nil {
+		log.Fatal("error occured when binding json to the context: ", err)
+	}
 
 	error := ""
 
@@ -287,12 +288,16 @@ func register(c *gin.Context) {
 
 	var body struct {
 		Username  string `json:"username"`
+		Email     string `json:"email"`
 		Password  string `json:"password"`
 		Password2 string `json:"password2"`
-		Email     string `json:"email"`
 	}
 
-	c.BindJSON(&body)
+	err := c.BindJSON(&body)
+
+	if err != nil {
+		log.Fatal("error occured when binding json to the context: ", err)
+	}
 
 	error := ""
 
@@ -311,8 +316,8 @@ func register(c *gin.Context) {
 	if error == "" {
 		user := entities.User{
 			Username: body.Username,
-			PW_Hash:  body.Password, // UPDATE SO PASSWORD IS HASHED
 			Email:    body.Email,
+			Password: entities.Salt_pwd(body.Password),
 		}
 
 		database.DB.Create(&user)
@@ -374,7 +379,7 @@ func simRegister(c *gin.Context) {
 	} else {
 		user := entities.User{
 			Username: body.Username,
-			PW_Hash:  body.Password, // UPDATE SO PASSWORD IS HASHED
+			Password: entities.Salt_pwd(body.Password), // UPDATE SO PASSWORD IS HASHED
 			Email:    body.Email,
 		}
 
@@ -652,6 +657,7 @@ func main() {
 	}
 
 	database.MigrateEntities()
+	database.SeedDatabase()
 
 	router := setupRouter()
 	router.Run() // port 8080
