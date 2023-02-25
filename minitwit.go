@@ -284,9 +284,9 @@ func logoutf(c *gin.Context) {
 	c.String(200, "You were logged out")
 }
 
-func salt_pwd(pwd []byte) string {
+func salt_pwd(pwd string) string {
 	// hashes the given password
-	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
 	if err != nil {
 		log.Fatal("The given password could not be hashed. ", err)
 	}
@@ -328,7 +328,7 @@ func register(c *gin.Context) {
 		user := entities.User{
 			Username: body.Username,
 			Email:    body.Email,
-			Password: salt_pwd([]byte(body.Password)),
+			Password: salt_pwd(body.Password),
 		}
 
 		database.DB.Create(&user)
@@ -390,7 +390,7 @@ func simRegister(c *gin.Context) {
 	} else {
 		user := entities.User{
 			Username: body.Username,
-			PW_Hash:  body.Password, // UPDATE SO PASSWORD IS HASHED
+			Password: body.Password, // UPDATE SO PASSWORD IS HASHED
 			Email:    body.Email,
 		}
 
