@@ -38,9 +38,9 @@ func getUserId(username string) (uint, error) { //Convenience method to look up 
 func checkPasswordHash(username string, enteredPW string) (bool, error) {
 	var user entities.User
 
-	hashedEnteredPW := enteredPW //hash "enteredPW" with hash function we're using
+	hashedEnteredPW := salt_pwd(enteredPW)
 
-	if err := database.DB.Where("username = ? AND pw_hash = ?", username, hashedEnteredPW).First(&user).Error; err != nil {
+	if err := database.DB.Where("Username = ? AND Password = ?", username, hashedEnteredPW).First(&user).Error; err != nil {
 		return false, err
 	}
 
