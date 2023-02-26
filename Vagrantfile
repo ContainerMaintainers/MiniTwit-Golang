@@ -60,7 +60,8 @@ Vagrant.configure("2") do |config|
         sudo apt upgrade
         sudo apt install golang-go
         go mod download
-        nohup go build -o . minitwit.go
+        go build -o . minitwit.go
+        nohup ./minitwit
         IP=$(ifconfig eth2 | awk -F ' *|:' '/inet /{print $3}')
         echo "================================================================="
         echo "=                            DONE                               ="
