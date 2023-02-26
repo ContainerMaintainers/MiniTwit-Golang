@@ -3,16 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 const Per_page int = 30
