@@ -1,75 +1,125 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-unless File.exist? "/etc/vbox/networks.conf"
-  # See https://www.virtualbox.org/manual/ch06.html#network_hostonly
- puts "Adding network configuration for VirtualBox."
- puts "You will need to enter your root password..."
- system("sudo bash vbox-network.sh")
-end
+$ip_file = "db_ip.txt"
 
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
 Vagrant.configure("2") do |config|
-  # The most common configuration options are documented and commented below.
-  # For a complete reference, please see the online documentation at
-  # https://docs.vagrantup.com.
-
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "generic/ubuntu1804"
-
-  config.vm.network "private_network", type: "dhcp"
-
+  config.vm.box = 'digital_ocean'
+  config.vm.box_url = "https://github.com/devopsgroup-io/vagrant-digitalocean/raw/master/box/digital_ocean.box"
+  config.ssh.private_key_path = '~/.ssh/id_rsa'
   config.vm.synced_folder ".", "/vagrant", type: "rsync"
 
-
   config.vm.define "dbserver", primary: true do |server|
-    server.vm.network "private_network", ip: "192.168.20.2"
-    server.vm.provider "virtualbox" do |vb|
-      vb.memory = "1024"
+    server.vm.provider :digital_ocean do |provider|
+      provider.ssh_key_name = ENV["SSH_KEY_NAME"]
+      provider.token = ENV["DIGITAL_OCEAN_TOKEN"]
+      provider.image = 'ubuntu-18-04-x64'
+      provider.region = 'fra1'
+      provider.size = 's-1vcpu-1gb'
+      provider.privatenetworking = true
     end
+
     server.vm.hostname = "dbserver"
-    server.vm.provision "shell", privileged: false, inline: <<-SHELL
-        echo "Installing Postgres"
-        sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-        sudo apt-get update
-        sudo apt-get -y install postgresql
-        sudo mkdir -p /data/db
-        conf_location=`sudo -u postgres psql -c 'SHOW config_file'`
-        sudo sed -i '/  bindIp:/ s/127.0.0.1/0.0.0.0/' $conf_location
-        postgres -D /data/db
-    SHELL
-  end
 
-  config.vm.define "webserver", primary: true do |server|
-    server.vm.network "private_network", ip: "192.168.20.3"
-    # server.vm.network "forwarded_port", guest: 5000, host: 5000
-    server.vm.provider "virtualbox" do |vb|
-      vb.memory = "1024"
+    server.trigger.after :up do |trigger|
+      trigger.info =  "Writing dbserver's IP to file..."
+      trigger.ruby do |env,machine|
+        remote_ip = machine.instance_variable_get(:@communicator).instance_variable_get(:@connection_ssh_info)[:host]
+        File.write($ip_file, remote_ip)
+      end
     end
-    server.vm.hostname = "webserver"
-    server.vm.provision "shell", privileged: false, inline: <<-SHELL
-        export DB_IP="192.168.20.2"
-        cp -r /vagrant/* $HOME
-        sudo apt update
-        sudo apt upgrade
-        sudo apt install golang-go
-        go mod download
-        go build -o . minitwit.go
-        nohup ./minitwit
-        IP=$(ifconfig eth2 | awk -F ' *|:' '/inet /{print $3}')
-        echo "================================================================="
-        echo "=                            DONE                               ="
-        echo "================================================================="
-        echo "Navigate in your browser to: http://$IP:5000"
+
+    server.vm.provision "shell", inline: <<-SHELL
+      echo "Installing postgresql"
+      sudo apt-get -y install wget ca-certificates
+      wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+      sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+      sudo apt-get -y update
+      sudo apt-get -y install postgresql postgresql-contrib
+      echo "Starting postgresql"
+      service postgresql start
+      echo "Checking status of postgresql"
+      service postgresql status 
     SHELL
   end
 
-  config.vm.provision "shell", privileged: false, inline: <<-SHELL
-      sudo apt-get update
+  config.vm.define "webserver", primary: false do |server|
+
+    server.vm.provider :digital_ocean do |provider|
+      provider.ssh_key_name = ENV["SSH_KEY_NAME"]
+      provider.token = ENV["DIGITAL_OCEAN_TOKEN"]
+      provider.image = 'ubuntu-18-04-x64'
+      provider.region = 'fra1'
+      provider.size = 's-1vcpu-1gb'
+      provider.privatenetworking = true
+    end
+
+    server.vm.hostname = "webserver"
+
+    server.trigger.before :up do |trigger|
+      trigger.info =  "Waiting to create server until dbserver's IP is available."
+      trigger.ruby do |env,machine|
+        ip_file = "db_ip.txt"
+        while !File.file?($ip_file) do
+          sleep(1)
+        end
+        db_ip = File.read($ip_file).strip()
+        puts "Now, I have it..."
+        puts db_ip
+      end
+    end
+
+    server.trigger.after :provision do |trigger|
+      trigger.ruby do |env,machine|
+        File.delete($ip_file) if File.exists? $ip_file
+      end
+    end
+
+    server.vm.provision "shell", inline: <<-SHELL
+      export DB_IP=`cat /vagrant/db_ip.txt`
+      echo $DB_IP
+
+      echo "Installing go..."
+      sudo snap install go --classic
+  
+      echo "Verifying go installation"
+      go version
+
+      echo "Installing gcc..."
+      sudo apt update
+      sudo apt -y install build-essential
+      
+      echo "Verifying gcc installation"
+      gcc --version
+
+      echo $DB_IP
+
+      cp -r /vagrant/* $HOME
+
+      touch .env
+      echo "DB_HOST=$DB_IP" >> .env
+      echo "DB_PORT=5432" >> .env
+      echo "DB_USER=admin" >> .env
+      echo "DB_PASSWORD=admin" >> .env
+      echo "DB_NAME=minitwit-db" >> .env
+      echo "PORT=8080" >> .env
+
+      echo "Installing go modules"
+      go mod download
+
+      echo "Building Minitwit"
+      go build -o minitwit minitwit.go
+
+      ./minitwit &
+      echo "================================================================="
+      echo "=                            DONE                               ="
+      echo "================================================================="
+      echo "Navigate in your browser to:"
+      THIS_IP=`hostname -I | cut -d" " -f1`
+      echo "http://${THIS_IP}:5000"
     SHELL
+  end
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    sudo apt-get update
+  SHELL
 end
