@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
@@ -72,7 +74,7 @@ func timeline(c *gin.Context) {
 		log.Fatal(err)
 	}
 
-	c.HTML(http.StatusOK, "index.html", gin.H{
+	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messages": messages,
 	})
 }
@@ -87,7 +89,7 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 		return
 	}
 
-	c.HTML(http.StatusOK, "index.html", gin.H{
+	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messages": messages,
 	})
 }
@@ -627,6 +629,7 @@ func setupRouter() *gin.Engine {
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
+	router.Static("/static", "./static/")
 
 	router.GET("/ping", ping)
 	router.GET("/", timeline)
