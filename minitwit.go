@@ -14,7 +14,6 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 const Per_page int = 30
