@@ -9,15 +9,9 @@
     <a href="/login">sign in</a>
   </div>
   <div class=body>
-    <ul>
-      {{ range .messages }}
-        <li>{{ .Text }} - {{ .Author_id }}</li>
-      {{ end }}
-    </ul>
+  {% block body %}{% endblock %}
   </div>
-
   <div class=footer>
     MiniTwit &mdash; A Gin Web Application
   </div>
 </div>
-</html>
