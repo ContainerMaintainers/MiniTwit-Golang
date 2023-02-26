@@ -19,7 +19,7 @@ func ConnectToDatabase() {
 	DB, err = gorm.Open(postgres.Open(dsnString), &gorm.Config{})
 
 	if err != nil {
-		fmt.Println("error connecting to database %s", err)
+		fmt.Println("error connecting to database ", err)
 	}
 }
 
@@ -28,7 +28,7 @@ func ConnectToTestDatabase() {
 	DB, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 
 	if err != nil {
-		fmt.Println("error connecting to database %s", err)
+		fmt.Println("error connecting to database ", err)
 	}
 }
 
