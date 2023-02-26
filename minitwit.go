@@ -74,7 +74,7 @@ func timeline(c *gin.Context) {
 		log.Fatal(err)
 	}
 
-	c.HTML(http.StatusOK, "index.html", gin.H{
+	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messages": messages,
 	})
 }
@@ -89,7 +89,7 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 		return
 	}
 
-	c.HTML(http.StatusOK, "index.html", gin.H{
+	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messages": messages,
 	})
 }
