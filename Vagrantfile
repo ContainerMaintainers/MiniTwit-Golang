@@ -42,7 +42,6 @@ Vagrant.configure("2") do |config|
         conf_location=`sudo -u postgres psql -c 'SHOW config_file'`
         sudo sed -i '/  bindIp:/ s/127.0.0.1/0.0.0.0/' $conf_location
         postgres -D /data/db
-        mongorestore --gzip /vagrant/dump
     SHELL
   end
 
