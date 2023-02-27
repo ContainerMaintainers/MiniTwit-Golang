@@ -35,12 +35,21 @@ Vagrant.configure("2") do |config|
       wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
       sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
       sudo apt-get -y update
-      sudo apt-get -y install postgresql postgresql-contrib
+      sudo apt-get -y install postgresql-15 postgresql-contrib-15
       echo "Starting postgresql"
       service postgresql start
       echo "Checking status of postgresql"
-      service postgresql status 
-    SHELL
+      service postgresql status
+      echo "Updating config files"
+      echo "listen_addresses='*'" >> /etc/postgresql/15/main/postgresql.conf
+      echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/15/main/pg_hba.conf
+      sudo -u postgres psql -c "CREATE DATABASE minitwitdb;"
+      sudo -u postgres psql -c "CREATE USER admin WITH ENCRYPTED PASSWORD 'admin';"
+      sudo -u postgres psql -c "ALTER DATABASE minitwitdb OWNER TO admin;"
+      sudo -u postgres psql -c "\\l"
+      sudo service postgresql restart
+      sudo -u postgres psql -c "show listen_addresses;"
+   SHELL
   end
 
   config.vm.define "webserver", primary: false do |server|
@@ -81,14 +90,14 @@ Vagrant.configure("2") do |config|
 
       echo "Installing go..."
       sudo snap install go --classic
-  
+
       echo "Verifying go installation"
       go version
 
       echo "Installing gcc..."
       sudo apt update
       sudo apt -y install build-essential
-      
+
       echo "Verifying gcc installation"
       gcc --version
 
@@ -101,7 +110,7 @@ Vagrant.configure("2") do |config|
       echo "DB_PORT=5432" >> .env
       echo "DB_USER=admin" >> .env
       echo "DB_PASSWORD=admin" >> .env
-      echo "DB_NAME=minitwit-db" >> .env
+      echo "DB_NAME=minitwitdb" >> .env
       echo "PORT=8080" >> .env
 
       echo "Installing go modules"
@@ -110,13 +119,13 @@ Vagrant.configure("2") do |config|
       echo "Building Minitwit"
       go build -o minitwit minitwit.go
 
-      ./minitwit &
+      nohup ./minitwit > out.log &
       echo "================================================================="
       echo "=                            DONE                               ="
       echo "================================================================="
       echo "Navigate in your browser to:"
       THIS_IP=`hostname -I | cut -d" " -f1`
-      echo "http://${THIS_IP}:5000"
+      echo "http://${THIS_IP}:8080"
     SHELL
   end
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
