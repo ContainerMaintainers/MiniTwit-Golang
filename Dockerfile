@@ -1,6 +1,7 @@
 # Base this docker container off the official golang docker image.
 # Docker containers inherit everything from their base.
-FROM golang:1.19
+FROM alpine:edge AS build
+RUN apk add --no-cache --update go gcc g++
 
 # Create a directory inside the container to store all our application 
 # and then make it the working directory.
