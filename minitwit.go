@@ -200,10 +200,10 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	}
 
 	var body struct {
-		Text string `json:"text"`
+		Text string `form:"text" json:"text"`
 	}
 
-	c.BindJSON(&body)
+	c.Bind(&body)
 
 	message := entities.Message{
 		Author_id: uint(user), // AUTHOR ID SHOULD GET SESSION USER ID
