@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
@@ -228,15 +227,15 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 }
 
 // ENDPOINT: POST /login
-func loginf(c *gin.Context) { //Logs the user in.
+func login_user(c *gin.Context) { //Logs the user in.
 	//check if there exists a session user, if yes, redirect to timeline ("/")
 
 	var body struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
+		Username string `form:"username" json:"username"`
+		Password string `form:"password" json:"password"`
 	}
 
-	err := c.BindJSON(&body)
+	err := c.Bind(&body)
 	if err != nil {
 		log.Fatal("error occured when binding json to the context: ", err)
 	}
@@ -291,6 +290,12 @@ func register(c *gin.Context) {
 	})
 }
 
+// ENDPOINT: GET /register
+func loginf(c *gin.Context) {
+	c.HTML(http.StatusOK, "login.html", gin.H{
+		"messages": "Login page",
+	})
+}
 
 // ENDPOINT: POST /register
 func register_user(c *gin.Context) {
@@ -653,7 +658,8 @@ func setupRouter() *gin.Engine {
 	router.POST("/register", register_user)
 	router.GET("/register", register)
 	router.POST("/add_message", addMessage)
-	router.POST("/login", loginf)
+	router.POST("/login", login_user)
+	router.GET("/login", loginf)
 	router.PUT("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
 
 	// SIM ENDPOINTS:
