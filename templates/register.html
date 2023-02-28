@@ -4,10 +4,17 @@
 <div class=page>
   <h1>MiniTwit | Sign Up</h1>
   <div class=navigation>
+  {{ if .user }}  
+    <a href="/">my timeline</a> |
+    <a href="/public">public</a> |
+    <a href="/logout">sign out</a>
+  {{ else }}
     <a href="/public">public timeline</a> |
     <a href="/register">sign up</a> |
     <a href="/login">sign in</a>
+  {{ end }}
   </div>
+  {{range .flashes}}{{.}}{{end}}
   <div class=body>
     <h2>Sign Up</h2>
     <form action="/register" method=post>
