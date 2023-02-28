@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"strconv"
@@ -37,9 +38,15 @@ func getUserId(username string) (uint, error) { //Convenience method to look up 
 func checkPasswordHash(username string, enteredPW string) (bool, error) {
 	var user entities.User
 
-	hashedEnteredPW := entities.Salt_pwd(enteredPW)
+	if err := database.DB.Where("username = ?", username).First(&user).Error; err != nil {
+		return false, err
+	}
 
-	if err := database.DB.Where("username = ? AND password = ?", username, hashedEnteredPW).First(&user).Error; err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(enteredPW)); err != nil {
+		return false, err
+	}
+
+	if err := database.DB.Where("username = ? AND password = ?", username, user.Password).First(&user).Error; err != nil {
 		return false, err
 	}
 
@@ -69,7 +76,7 @@ func timeline(c *gin.Context) {
 		Joins("left join followers on messages.author_id = followers.whom_id").
 		Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
 		Limit(Per_page).Find(&messages).Error; err != nil { // ORDER BY DATE
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
@@ -120,7 +127,6 @@ func username(c *gin.Context) { //Displays a user's tweets
 // ENDPOINT: POST /:username/follow
 func usernameFollow(c *gin.Context) { //Adds the current user as follower of the given user
 
-	//check if there exists a session user, if not, return error 401, try c.AbortWithStatus(401)
 	if user == -1 {
 		c.AbortWithStatus(401)
 		return
@@ -156,7 +162,6 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 // ENDPOINT: DELETE /:username/unfollow
 func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of the given user
 
-	//check if there exists a session user, if not, return error 401, try c.AbortWithStatus(401)
 	if user == -1 {
 		c.AbortWithStatus(401)
 		return
@@ -193,7 +198,6 @@ func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of t
 // ENDPOINT: POST /add_message
 func addMessage(c *gin.Context) { //Registers a new message for the user.
 
-	//check if there exists a session user, if not, return error 401, try c.AbortWithStatus(401)
 	if user == -1 {
 		c.AbortWithStatus(401)
 		return
@@ -237,7 +241,9 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 	err := c.Bind(&body)
 	if err != nil {
-		log.Fatal("error occured when binding json to the context: ", err)
+		log.Print("error occured when binding json to the context: ", err)
+		c.AbortWithStatus(400)
+		return
 	}
 
 	error := ""
@@ -290,7 +296,8 @@ func register(c *gin.Context) {
 	})
 }
 
-// ENDPOINT: GET /register
+
+// ENDPOINT: GET /login
 func loginf(c *gin.Context) {
 	c.HTML(http.StatusOK, "login.html", gin.H{
 		"messages": "Login page",
@@ -310,7 +317,9 @@ func register_user(c *gin.Context) {
 	err := c.Bind(&body)
 
 	if err != nil {
-		log.Fatal("error occured when binding json to the context: ", err)
+		log.Print("error occured when binding json to the context: ", err)
+		c.AbortWithStatus(400)
+		return
 	}
 
 	error := ""
@@ -362,16 +371,19 @@ func notReqFromSimulator(request *http.Request) gin.H {
 }
 
 func updateLatest(request *http.Request) {
+	log.Print("Updating latest")
 	latest_value, err := strconv.Atoi(request.URL.Query().Get("latest"))
 	if latest_value != -1 && err == nil {
 		latest = latest_value
 	} else if err != nil {
 		log.Print("During updateLatest(): ", err)
+		latest = -1
 	}
 }
 
 // ENDPOINT: GET /sim/latest
 func simLatest(c *gin.Context) {
+	log.Print("/sim/latest ", latest)
 	c.JSON(200, gin.H{"latest": latest})
 }
 
@@ -438,8 +450,7 @@ func simMsgs(c *gin.Context) {
 	num_of_msgs, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
 		log.Print("During /sim/msgs ", err)
-		c.AbortWithStatus(400)
-		return
+		num_of_msgs = 100
 	}
 
 	if err := database.DB.Table("messages").
@@ -448,7 +459,9 @@ func simMsgs(c *gin.Context) {
 		Limit(num_of_msgs).
 		Select("messages.ID, messages.text, messages.pub_date, users.username").
 		Find(&messages).Error; err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		c.AbortWithStatus(400)
+		return
 	}
 
 	c.JSON(200, messages)
@@ -474,7 +487,9 @@ func simPostUserMsg(c *gin.Context) {
 
 	user_id, err := getUserId(username)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		c.AbortWithStatus(400)
+		return
 	}
 
 	message := entities.Message{
@@ -523,7 +538,9 @@ func simGetUserMsg(c *gin.Context) {
 		Limit(num_of_msgs).
 		Select("messages.ID, messages.text, messages.pub_date, users.username").
 		Find(&messages).Error; err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		c.AbortWithStatus(400)
+		return
 	}
 
 	c.JSON(200, messages)
@@ -543,7 +560,7 @@ func simGetUserFllws(c *gin.Context) {
 
 	user_id, err := getUserId(username)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		c.AbortWithStatus(404)
 		return
 	}
@@ -564,7 +581,7 @@ func simGetUserFllws(c *gin.Context) {
 		Joins("join followers on followers.whom_id = users.id").
 		Where("followers.who_id = ?", user_id).
 		Limit(num_of_followers).Find(&usernames).Error; err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	var usernameStrings []string
@@ -598,7 +615,7 @@ func simPostUserFllws(c *gin.Context) {
 
 	user_id, err := getUserId(username)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		c.AbortWithStatus(404)
 		return
 	}
@@ -607,8 +624,9 @@ func simPostUserFllws(c *gin.Context) {
 
 		follow_user_id, err := getUserId(body.Follow)
 		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
 			c.AbortWithStatus(404)
+			return
 		}
 
 		follower := entities.Follower{
@@ -624,7 +642,7 @@ func simPostUserFllws(c *gin.Context) {
 
 		unfollow_user_id, err := getUserId(body.Unfollow)
 		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
 			c.AbortWithStatus(404)
 			return
 		}
