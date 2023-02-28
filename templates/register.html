@@ -1,0 +1,30 @@
+<!doctype html>
+<title>Welcome | MiniTwit</title>
+<link rel=stylesheet type=text/css href="/static/style.css">
+<div class=page>
+  <h1>MiniTwit | Sign Up</h1>
+  <div class=navigation>
+    <a href="/public">public timeline</a> |
+    <a href="/register">sign up</a> |
+    <a href="/login">sign in</a>
+  </div>
+  <div class=body>
+    <h2>Sign Up</h2>
+    <form action="/register" method=post>
+        <dl>
+          <dt>Username:
+          <dd><input type=text name="username" size=30 value="{{ .form.username }}"> 
+          <dt>E-Mail:
+          <dd><input type=text name="email" size=30 value="{{ .form.email }}">
+          <dt>Password:
+          <dd><input type=password name="password" size=30>
+          <dt>Password <small>(repeat)</small>:
+          <dd><input type=password name="password2" size=30>
+        </dl>
+        <div class=actions><input type=submit value="Sign Up"></div>
+      </form>
+  </div>
+  <div class=footer>
+    MiniTwit &mdash; A Gin Web Application
+  </div>
+</div>

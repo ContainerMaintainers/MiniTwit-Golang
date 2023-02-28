@@ -284,17 +284,25 @@ func logoutf(c *gin.Context) {
 	c.String(200, "You were logged out")
 }
 
-// ENDPOINT: POST /register
+// ENDPOINT: GET /register
 func register(c *gin.Context) {
+	c.HTML(http.StatusOK, "register.html", gin.H{
+		"messages": "register page",
+	})
+}
+
+
+// ENDPOINT: POST /register
+func register_user(c *gin.Context) {
 
 	var body struct {
-		Username  string `json:"username"`
-		Email     string `json:"email"`
-		Password  string `json:"password"`
-		Password2 string `json:"password2"`
+		Username  string `form:"username" json:"username"`
+		Email     string `form:"email" json:"email"`
+		Password  string `form:"password" json:"password"`
+		Password2 string `form:"password2" json:"password2"`
 	}
 
-	err := c.BindJSON(&body)
+	err := c.Bind(&body)
 
 	if err != nil {
 		log.Fatal("error occured when binding json to the context: ", err)
@@ -324,9 +332,15 @@ func register(c *gin.Context) {
 		database.DB.Create(&user)
 
 		c.String(200, "You were successfully registered and can login now")
+		/*c.HTML(http.StatusOK, "register.html", gin.H{
+			"message": "You were successfully registered and can login now",
+		})*/
 
 	} else {
 		c.String(400, error)
+		/*c.HTML(http.StatusOK, "register.html", gin.H{
+			"error": error,
+		})*/
 	}
 
 }
@@ -636,7 +650,8 @@ func setupRouter() *gin.Engine {
 	router.GET("/:username", username)
 	router.POST("/:username/follow", usernameFollow)
 	router.DELETE("/:username/unfollow", usernameUnfollow)
-	router.POST("/register", register)
+	router.POST("/register", register_user)
+	router.GET("/register", register)
 	router.POST("/add_message", addMessage)
 	router.POST("/login", loginf)
 	router.PUT("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
