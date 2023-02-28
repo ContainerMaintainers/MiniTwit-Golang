@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
@@ -38,9 +38,15 @@ func getUserId(username string) (uint, error) { //Convenience method to look up 
 func checkPasswordHash(username string, enteredPW string) (bool, error) {
 	var user entities.User
 
-	hashedEnteredPW := entities.Salt_pwd(enteredPW)
+	if err := database.DB.Where("username = ?", username).First(&user).Error; err != nil {
+		return false, err
+	}
 
-	if err := database.DB.Where("username = ? AND password = ?", username, hashedEnteredPW).First(&user).Error; err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(enteredPW)); err != nil {
+		return false, err
+	}
+
+	if err := database.DB.Where("username = ? AND password = ?", username, user.Password).First(&user).Error; err != nil {
 		return false, err
 	}
 
@@ -290,7 +296,6 @@ func register(c *gin.Context) {
 		"messages": "register page",
 	})
 }
-
 
 // ENDPOINT: POST /register
 func register_user(c *gin.Context) {
