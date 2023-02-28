@@ -8,7 +8,7 @@ RUN apk add --no-cache --update go gcc g++
 WORKDIR /usr/src/app
 
 # Copy everything and Download Go modules
-COPY ../.. .
+COPY . .
 RUN go mod download && go mod tidy
 
 # Build the application (this will build only minitwit.go)

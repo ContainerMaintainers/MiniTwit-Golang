@@ -24,8 +24,8 @@ services:
       postgres:
         condition: service_healthy
     build: 
-      context: ..
-      dockerfile: ../Dockerfile
+      context: .
+      dockerfile: Dockerfile
     ports:
       - '8080:8080'
     restart: always
