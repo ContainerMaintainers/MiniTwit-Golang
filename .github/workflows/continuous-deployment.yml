@@ -7,6 +7,8 @@ on:
     branches:
       - main
       - master
+      - development
+      - enabler/test-workflow
   # allow manual triggers for now too
   workflow_dispatch:
     manual: true
