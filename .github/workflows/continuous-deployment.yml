@@ -11,5 +11,7 @@ on:
       - enabler/test-workflow
   # allow manual triggers for now too
   workflow_dispatch:
-    manual: true
-''
+    inputs:
+      tags:
+        description: 'Test workflow'
+
