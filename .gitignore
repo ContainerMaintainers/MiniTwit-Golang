@@ -1,4 +1,6 @@
 .env
-.pytest_cache
-__pycache__
 .idea/
+__pycache__
+.pytest_cache
+.vagrant/
+db_ip.txt
