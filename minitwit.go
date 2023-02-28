@@ -284,8 +284,16 @@ func logoutf(c *gin.Context) {
 	c.String(200, "You were logged out")
 }
 
-// ENDPOINT: POST /register
+// ENDPOINT: GET /register
 func register(c *gin.Context) {
+	c.HTML(http.StatusOK, "register.html", gin.H{
+		"messages": "register page",
+	})
+}
+
+
+// ENDPOINT: POST /register
+func register_user(c *gin.Context) {
 
 	var body struct {
 		Username  string `json:"username"`
@@ -636,7 +644,8 @@ func setupRouter() *gin.Engine {
 	router.GET("/:username", username)
 	router.POST("/:username/follow", usernameFollow)
 	router.DELETE("/:username/unfollow", usernameUnfollow)
-	router.POST("/register", register)
+	router.POST("/register_user", register_user)
+	router.GET("/register", register)
 	router.POST("/add_message", addMessage)
 	router.POST("/login", loginf)
 	router.PUT("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
