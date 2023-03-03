@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 	"os"
 
 	"gorm.io/driver/postgres"
@@ -36,7 +37,7 @@ func MigrateEntities() {
 }
 
 func SeedDatabase() {
-	for _, seed := range AllSeeds() {
+	for _, seed := range initializers.AllSeeds() {
 		seed.Run(DB)
 	}
 }
