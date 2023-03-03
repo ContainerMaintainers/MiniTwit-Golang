@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	entities2 "github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"os"
 
 	"gorm.io/driver/postgres"
@@ -32,7 +32,7 @@ func ConnectToTestDatabase() {
 }
 
 func MigrateEntities() {
-	DB.AutoMigrate(&entities2.User{}, &entities2.Message{}, &entities2.Follower{})
+	DB.AutoMigrate(&entities.User{}, &entities.Message{}, &entities.Follower{})
 }
 
 func SeedDatabase() {

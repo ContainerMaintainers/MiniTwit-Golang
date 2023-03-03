@@ -1,7 +1,7 @@
 package database
 
 import (
-	entities2 "github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"gorm.io/gorm"
 )
 
@@ -70,14 +70,14 @@ func AllSeeds() []Seed {
 }
 
 func CreateUser(db *gorm.DB, username string, email string, pwd string) {
-	db.Create(&entities2.User{
+	db.Create(&entities.User{
 		Username: username,
 		Email:    email,
-		Password: entities2.Salt_pwd(pwd)})
+		Password: entities.Salt_pwd(pwd)})
 }
 
 func CreateMessage(db *gorm.DB, author uint, text string, date uint, flagged bool) {
-	db.Create(&entities2.Message{
+	db.Create(&entities.Message{
 		Author_id: author,
 		Text:      text,
 		Pub_Date:  date,
@@ -85,7 +85,7 @@ func CreateMessage(db *gorm.DB, author uint, text string, date uint, flagged boo
 }
 
 func CreateFollower(db *gorm.DB, who uint, whom uint) {
-	db.Create(&entities2.Follower{
+	db.Create(&entities.Follower{
 		Who_ID:  who,
 		Whom_ID: whom})
 }
