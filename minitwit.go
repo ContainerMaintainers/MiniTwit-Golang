@@ -3,17 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
-	"net/url"
 
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 	"github.com/gin-gonic/gin"
 )
@@ -336,7 +336,7 @@ func register_user(c *gin.Context) {
 		error = "You have to enter a password"
 	} else if body.Password != body.Password2 {
 		error = "The two passwords do not match"
-	} else if _, err := getUserId(body.Username); err == nil {   
+	} else if _, err := getUserId(body.Username); err == nil {
 		error = "The username is already taken"
 	}
 
