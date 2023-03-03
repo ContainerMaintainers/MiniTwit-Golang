@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"net/url"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -119,7 +120,7 @@ func username(c *gin.Context) { //Displays a user's tweets
 		return
 	}
 
-	c.JSON(200, gin.H{
+	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messagesFromUser": messagesFromUser,
 	})
 
@@ -270,9 +271,12 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 		//redirect to timeline ("/")
 		//c.Redirect(200, "/")
+		user_path := "/" + body.Username
+		location := url.URL{Path: user_path}
+		c.Redirect(http.StatusFound, location.RequestURI())
 
 		// Temporarily dont redirect
-		c.String(200, "You were logged in")
+		//c.String(200, "You were logged in")
 
 	} else {
 		c.String(400, error)
@@ -332,7 +336,7 @@ func register_user(c *gin.Context) {
 		error = "You have to enter a password"
 	} else if body.Password != body.Password2 {
 		error = "The two passwords do not match"
-	} else if _, err := getUserId(body.Username); err != nil {
+	} else if _, err := getUserId(body.Username); err == nil {   
 		error = "The username is already taken"
 	}
 
@@ -345,16 +349,12 @@ func register_user(c *gin.Context) {
 
 		database.DB.Create(&user)
 
-		c.String(200, "You were successfully registered and can login now")
-		/*c.HTML(http.StatusOK, "register.html", gin.H{
-			"message": "You were successfully registered and can login now",
-		})*/
+		//c.String(200, "You were successfully registered and can login now")
+		location := url.URL{Path: "/login"}
+		c.Redirect(http.StatusFound, location.RequestURI())
 
 	} else {
 		c.String(400, error)
-		/*c.HTML(http.StatusOK, "register.html", gin.H{
-			"error": error,
-		})*/
 	}
 
 }
