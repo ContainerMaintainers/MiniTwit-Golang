@@ -5,23 +5,22 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
-	"net/url"
-
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const Per_page int = 30
 
 var (
-	latest   = 0
+	latest   = -1
 	testFlag = flag.Bool("t", false, "Whether or not to use test database")
 	user     = -1
 )
@@ -78,7 +77,7 @@ func timeline(c *gin.Context) {
 		Joins("left join followers on messages.author_id = followers.whom_id").
 		Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
 		Limit(Per_page).Find(&messages).Error; err != nil { // ORDER BY DATE
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 	}
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
@@ -92,6 +91,7 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 	var messages []entities.Message
 
 	if err := database.DB.Where("Flagged = false").Order("Pub_Date desc").Limit(Per_page).Find(&messages).Error; err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -107,8 +107,8 @@ func username(c *gin.Context) { //Displays a user's tweets
 	username := c.Param("username") //gets the <username> from the url
 
 	userID, err := getUserId(username)
-
 	if err != nil {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
 		c.Status(404)
 		return
 	}
@@ -116,6 +116,7 @@ func username(c *gin.Context) { //Displays a user's tweets
 	var messagesFromUser []entities.Message
 
 	if err := database.DB.Where("author_id = ?", userID).Limit(Per_page).Find(&messagesFromUser).Error; err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(404)
 		return
 	}
@@ -130,6 +131,7 @@ func username(c *gin.Context) { //Displays a user's tweets
 func usernameFollow(c *gin.Context) { //Adds the current user as follower of the given user
 
 	if user == -1 {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
 		c.AbortWithStatus(401)
 		return
 	}
@@ -139,17 +141,20 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 	who := uint(user) // SHOULD GET SESSION USER ID
 
 	whom, err := getUserId(username)
-
 	if err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.Status(404)
 		return
 	}
+
 	follow := entities.Follower{
 		Who_ID:  who, // !
 		Whom_ID: whom,
 	}
-	result := database.DB.Create(&follow)
-	if result.Error != nil { //when user is already following 'whom'
+
+	err = database.DB.Create(&follow).Error
+	if err != nil { //when user is already following 'whom'
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + "Already following " + username)
 		c.Status(400)
 		return
 	}
@@ -165,6 +170,7 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of the given user
 
 	if user == -1 {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
 		c.AbortWithStatus(401)
 		return
 	}
@@ -174,8 +180,8 @@ func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of t
 	who := uint(user) // SHOULD GET SESSION USER ID
 
 	whom, err := getUserId(username)
-
 	if err != nil {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
 		c.Status(404)
 		return
 	}
@@ -184,8 +190,10 @@ func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of t
 		Who_ID:  who, // !
 		Whom_ID: whom,
 	}
-	result := database.DB.Where("Who_ID = ? AND Whom_ID = ?", unfollow.Who_ID, unfollow.Whom_ID).Delete(&unfollow)
-	if result.Error != nil { //when user is already following 'whom'
+
+	err = database.DB.Where("Who_ID = ? AND Whom_ID = ?", unfollow.Who_ID, unfollow.Whom_ID).Delete(&unfollow).Error
+	if err != nil { //when user is already following 'whom'
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.Status(400)
 		return
 	}
@@ -201,6 +209,7 @@ func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of t
 func addMessage(c *gin.Context) { //Registers a new message for the user.
 
 	if user == -1 {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
 		c.AbortWithStatus(401)
 		return
 	}
@@ -218,9 +227,9 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 		Flagged:   false,
 	}
 
-	result := database.DB.Create(&message)
-
-	if result.Error != nil {
+	err := database.DB.Create(&message).Error
+	if err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.Status(400)
 		return
 	}
@@ -243,7 +252,7 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 	err := c.Bind(&body)
 	if err != nil {
-		log.Print("error occured when binding json to the context: ", err)
+		log.Print("Ran into error when binding to context during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -252,8 +261,10 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 	//if POST req?
 	if _, err := getUserId(body.Username); err != nil {
+		log.Print("Bad request during " + c.Request.RequestURI + ": Invalid username " + body.Username)
 		error = "Invalid username"
 	} else if _, err := checkPasswordHash(body.Username, body.Password); err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error() + ", invalid password")
 		error = "Invalid password"
 	}
 
@@ -264,6 +275,7 @@ func login_user(c *gin.Context) { //Logs the user in.
 		// Until session stuff is working, just keep track of the user through a global variable
 		// In this case the id is replaced with the username
 		if userID, err := getUserId(body.Username); err != nil {
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 			user = -1
 		} else {
 			user = int(userID)
@@ -319,9 +331,8 @@ func register_user(c *gin.Context) {
 	}
 
 	err := c.Bind(&body)
-
 	if err != nil {
-		log.Print("error occured when binding json to the context: ", err)
+		log.Print("Ran into error when binding to context during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -329,14 +340,19 @@ func register_user(c *gin.Context) {
 	error := ""
 
 	if body.Username == "" {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No username provided")
 		error = "You have to enter a username"
 	} else if body.Email == "" || !strings.Contains(body.Email, "@") {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Invalid email")
 		error = "You have to enter a valid email address"
 	} else if body.Password == "" {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No password provided")
 		error = "You have to enter a password"
 	} else if body.Password != body.Password2 {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Passwords do not match")
 		error = "The two passwords do not match"
-	} else if _, err := getUserId(body.Username); err == nil {   
+	} else if _, err := getUserId(body.Username); err == nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + " Username already taken")
 		error = "The username is already taken"
 	}
 
@@ -347,7 +363,12 @@ func register_user(c *gin.Context) {
 			Password: entities.Salt_pwd(body.Password),
 		}
 
-		database.DB.Create(&user)
+		err := database.DB.Create(&user).Error
+		if err != nil {
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+			c.AbortWithStatus(500)
+			return
+		}
 
 		//c.String(200, "You were successfully registered and can login now")
 		location := url.URL{Path: "/login"}
@@ -364,6 +385,7 @@ func register_user(c *gin.Context) {
 func notReqFromSimulator(request *http.Request) gin.H {
 	from_simulator := request.Header.Get("Authorization")
 	if from_simulator != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh" {
+		log.Print("Forbidden request " + request.RequestURI + ": " + "request not made from simulator")
 		return gin.H{"status": 403, "error_msg": "You are not authorized to use this resource!"}
 	} else {
 		return nil
@@ -371,19 +393,18 @@ func notReqFromSimulator(request *http.Request) gin.H {
 }
 
 func updateLatest(request *http.Request) {
-	log.Print("Updating latest")
 	latest_value, err := strconv.Atoi(request.URL.Query().Get("latest"))
 	if latest_value != -1 && err == nil {
 		latest = latest_value
+		log.Print("Updated latest to ", latest_value)
 	} else if err != nil {
-		log.Print("During updateLatest(): ", err)
+		log.Print("Ran into error when updating latest: ", err)
 		latest = -1
 	}
 }
 
 // ENDPOINT: GET /sim/latest
 func simLatest(c *gin.Context) {
-	log.Print("/sim/latest ", latest)
 	c.JSON(200, gin.H{"latest": latest})
 }
 
@@ -408,7 +429,7 @@ func simRegister(c *gin.Context) {
 		error = "You have to enter a valid email address"
 	} else if body.Password == "" {
 		error = "You have to enter a password"
-	} else if _, err := getUserId(body.Username); err != nil {
+	} else if _, err := getUserId(body.Username); err == nil {
 		error = "The username is already taken"
 	} else {
 		user := entities.User{
@@ -417,11 +438,14 @@ func simRegister(c *gin.Context) {
 			Email:    body.Email,
 		}
 
-		database.DB.Create(&user)
-
+		err := database.DB.Create(&user).Error
+		if err != nil {
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		}
 	}
 
 	if error != "" {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + error)
 		c.JSON(400, gin.H{"status": 400, "error_msg": error})
 	} else {
 		c.String(204, "")
@@ -449,7 +473,7 @@ func simMsgs(c *gin.Context) {
 
 	num_of_msgs, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
-		log.Print("During /sim/msgs ", err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		num_of_msgs = 100
 	}
 
@@ -459,7 +483,7 @@ func simMsgs(c *gin.Context) {
 		Limit(num_of_msgs).
 		Select("messages.ID, messages.text, messages.pub_date, users.username").
 		Find(&messages).Error; err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -487,7 +511,7 @@ func simPostUserMsg(c *gin.Context) {
 
 	user_id, err := getUserId(username)
 	if err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -498,7 +522,10 @@ func simPostUserMsg(c *gin.Context) {
 		Pub_Date:  uint(time.Now().Unix()),
 	}
 
-	database.DB.Create(&message)
+	err = database.DB.Create(&message).Error
+	if err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+	}
 
 	c.String(204, "")
 
@@ -527,7 +554,7 @@ func simGetUserMsg(c *gin.Context) {
 
 	num_of_msgs, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
-		log.Print("During /sim/msgs/:username ", err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -538,7 +565,7 @@ func simGetUserMsg(c *gin.Context) {
 		Limit(num_of_msgs).
 		Select("messages.ID, messages.text, messages.pub_date, users.username").
 		Find(&messages).Error; err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -560,7 +587,7 @@ func simGetUserFllws(c *gin.Context) {
 
 	user_id, err := getUserId(username)
 	if err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(404)
 		return
 	}
@@ -568,7 +595,7 @@ func simGetUserFllws(c *gin.Context) {
 	num_of_followers, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
 		num_of_followers = 100
-		log.Print("During /sim/fllws/:username ", err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 	}
 
 	type Username struct {
@@ -581,7 +608,7 @@ func simGetUserFllws(c *gin.Context) {
 		Joins("join followers on followers.whom_id = users.id").
 		Where("followers.who_id = ?", user_id).
 		Limit(num_of_followers).Find(&usernames).Error; err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 	}
 
 	var usernameStrings []string
@@ -615,7 +642,7 @@ func simPostUserFllws(c *gin.Context) {
 
 	user_id, err := getUserId(username)
 	if err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(404)
 		return
 	}
@@ -624,7 +651,7 @@ func simPostUserFllws(c *gin.Context) {
 
 		follow_user_id, err := getUserId(body.Follow)
 		if err != nil {
-			log.Print(err)
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 			c.AbortWithStatus(404)
 			return
 		}
@@ -634,7 +661,10 @@ func simPostUserFllws(c *gin.Context) {
 			Whom_ID: follow_user_id,
 		}
 
-		database.DB.Create(&follower)
+		err = database.DB.Create(&follower).Error
+		if err != nil {
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		}
 
 		c.String(204, "")
 
@@ -642,7 +672,7 @@ func simPostUserFllws(c *gin.Context) {
 
 		unfollow_user_id, err := getUserId(body.Unfollow)
 		if err != nil {
-			log.Print(err)
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 			c.AbortWithStatus(404)
 			return
 		}
@@ -652,10 +682,14 @@ func simPostUserFllws(c *gin.Context) {
 			Whom_ID: unfollow_user_id,
 		}
 
-		database.DB.Where("whom_id = ? and who_id = ?", follower.Whom_ID, follower.Who_ID).Delete(&follower)
+		err = database.DB.Where("whom_id = ? and who_id = ?", follower.Whom_ID, follower.Who_ID).Delete(&follower).Error
+		if err != nil {
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		}
 
 		c.String(204, "")
 	} else {
+		log.Print("Bad request " + c.Request.RequestURI + ": " + "neither body.Follow nor body.Unfollow set")
 		c.String(400, "")
 	}
 
@@ -663,6 +697,7 @@ func simPostUserFllws(c *gin.Context) {
 
 func setupRouter() *gin.Engine {
 
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/static", "./static/")
