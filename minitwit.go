@@ -3,13 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
@@ -297,6 +296,7 @@ func register(c *gin.Context) {
 	})
 }
 
+
 // ENDPOINT: GET /login
 func loginf(c *gin.Context) {
 	c.HTML(http.StatusOK, "login.html", gin.H{
@@ -332,7 +332,7 @@ func register_user(c *gin.Context) {
 		error = "You have to enter a password"
 	} else if body.Password != body.Password2 {
 		error = "The two passwords do not match"
-	} else if _, err := getUserId(body.Username); err != nil {
+	} else if id, _ := getUserId(body.Username); id != 0 {
 		error = "The username is already taken"
 	}
 
@@ -408,12 +408,12 @@ func simRegister(c *gin.Context) {
 		error = "You have to enter a valid email address"
 	} else if body.Password == "" {
 		error = "You have to enter a password"
-	} else if _, err := getUserId(body.Username); err != nil {
+	} else if id, _ := getUserId(body.Username); id != 0 {
 		error = "The username is already taken"
 	} else {
 		user := entities.User{
 			Username: body.Username,
-			Password: entities.Salt_pwd(body.Password),
+			Password: entities.Salt_pwd(body.Password), // UPDATE SO PASSWORD IS HASHED
 			Email:    body.Email,
 		}
 
