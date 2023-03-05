@@ -19,6 +19,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Print Username
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: echo "$DOCKER_USERNAME"
+    
       - name: Checkout
         uses: actions/checkout@v2
 
