@@ -25,6 +25,8 @@
           <dd><input type=submit value="Share"></dd>
         </form>
       </div>
+    {{ else }}
+      <h3>{{ .user }} is the .user variable</h3>
     {{ end }}
     <h2>Twits</h2>
     <ul class=messages>
@@ -37,12 +39,6 @@
       <li><em>There's no message so far.</em>
     {{ end }}
     </ul>
-    <!--<ul class=messages>
-        {{ range .messages }}
-            <li>{{ .Author_id }} - {{ .Text }}  {{ .Pub_Date }}</li>
-        {{ end }}
-    </ul>
-  </div>-->
   <div class=footer>
     MiniTwit &mdash; A Gin Web Application
   </div>

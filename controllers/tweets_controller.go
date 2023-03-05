@@ -36,7 +36,7 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 
 // ENDPOINT: GET /
 func timeline(c *gin.Context) {
-
+	
 	// check if there exists a session user, if not, return all messages
 	// For now just reuse the same endpoint handler as /public
 	if user == -1 {
@@ -55,6 +55,7 @@ func timeline(c *gin.Context) {
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messages": messages,
+		"user":     user,
 	})
 }
 
