@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	latest   = 0
+	latest   = -1
 	testFlag = flag.Bool("t", false, "Whether or not to use test database")
 	user     = -1
 )
