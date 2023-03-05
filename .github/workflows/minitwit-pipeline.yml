@@ -2,6 +2,9 @@
 name: Minitwit Pipeline
 
 on:
+  push:
+    branches:
+      - enabler/pipeline
   workflow_dispatch:
 
 # Remember to set the following secrets in your repository's settings:
