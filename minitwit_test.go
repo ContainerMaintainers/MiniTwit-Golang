@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/controllers"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -19,7 +20,7 @@ var router *gin.Engine
 // ------ Initialization ------ //
 
 func init() {
-	router = setupRouter()
+	router = controllers.SetupRouter()
 	database.ConnectToTestDatabase()
 	database.MigrateEntities()
 }
