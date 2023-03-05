@@ -14,6 +14,7 @@ import (
 func notReqFromSimulator(request *http.Request) gin.H {
 	from_simulator := request.Header.Get("Authorization")
 	if from_simulator != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh" {
+		log.Print("Forbidden request " + request.RequestURI + ": " + "request not made from simulator")
 		return gin.H{"status": 403, "error_msg": "You are not authorized to use this resource!"}
 	} else {
 		return nil
@@ -21,12 +22,12 @@ func notReqFromSimulator(request *http.Request) gin.H {
 }
 
 func updateLatest(request *http.Request) {
-	log.Print("Updating latest")
 	latest_value, err := strconv.Atoi(request.URL.Query().Get("latest"))
 	if latest_value != -1 && err == nil {
 		latest = latest_value
+		log.Print("Updated latest to ", latest_value)
 	} else if err != nil {
-		log.Print("During updateLatest(): ", err)
+		log.Print("Ran into error when updating latest: ", err)
 		latest = -1
 	}
 }
@@ -58,7 +59,7 @@ func simRegister(c *gin.Context) {
 		error = "You have to enter a valid email address"
 	} else if body.Password == "" {
 		error = "You have to enter a password"
-	} else if _, err := getUserId(body.Username); err != nil {
+	} else if _, err := getUserId(body.Username); err == nil {
 		error = "The username is already taken"
 	} else {
 		user := entities.User{
@@ -67,11 +68,14 @@ func simRegister(c *gin.Context) {
 			Email:    body.Email,
 		}
 
-		database.DB.Create(&user)
-
+		err := database.DB.Create(&user).Error
+		if err != nil {
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		}
 	}
 
 	if error != "" {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + error)
 		c.JSON(400, gin.H{"status": 400, "error_msg": error})
 	} else {
 		c.String(204, "")
@@ -99,7 +103,7 @@ func simMsgs(c *gin.Context) {
 
 	num_of_msgs, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
-		log.Print("During /sim/msgs ", err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		num_of_msgs = 100
 	}
 
@@ -109,7 +113,7 @@ func simMsgs(c *gin.Context) {
 		Limit(num_of_msgs).
 		Select("messages.ID, messages.text, messages.pub_date, users.username").
 		Find(&messages).Error; err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -137,7 +141,7 @@ func simPostUserMsg(c *gin.Context) {
 
 	user_id, err := getUserId(username)
 	if err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -148,7 +152,10 @@ func simPostUserMsg(c *gin.Context) {
 		Pub_Date:  uint(time.Now().Unix()),
 	}
 
-	database.DB.Create(&message)
+	err = database.DB.Create(&message).Error
+	if err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+	}
 
 	c.String(204, "")
 
@@ -177,7 +184,7 @@ func simGetUserMsg(c *gin.Context) {
 
 	num_of_msgs, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
-		log.Print("During /sim/msgs/:username ", err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -188,7 +195,7 @@ func simGetUserMsg(c *gin.Context) {
 		Limit(num_of_msgs).
 		Select("messages.ID, messages.text, messages.pub_date, users.username").
 		Find(&messages).Error; err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -210,7 +217,7 @@ func simGetUserFllws(c *gin.Context) {
 
 	user_id, err := getUserId(username)
 	if err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(404)
 		return
 	}
@@ -218,7 +225,7 @@ func simGetUserFllws(c *gin.Context) {
 	num_of_followers, err := strconv.Atoi(c.Request.URL.Query().Get("no"))
 	if err != nil {
 		num_of_followers = 100
-		log.Print("During /sim/fllws/:username ", err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 	}
 
 	type Username struct {
@@ -231,7 +238,7 @@ func simGetUserFllws(c *gin.Context) {
 		Joins("join followers on followers.whom_id = users.id").
 		Where("followers.who_id = ?", user_id).
 		Limit(num_of_followers).Find(&usernames).Error; err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 	}
 
 	var usernameStrings []string
@@ -265,7 +272,7 @@ func simPostUserFllws(c *gin.Context) {
 
 	user_id, err := getUserId(username)
 	if err != nil {
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(404)
 		return
 	}
@@ -274,7 +281,7 @@ func simPostUserFllws(c *gin.Context) {
 
 		follow_user_id, err := getUserId(body.Follow)
 		if err != nil {
-			log.Print(err)
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 			c.AbortWithStatus(404)
 			return
 		}
@@ -284,7 +291,10 @@ func simPostUserFllws(c *gin.Context) {
 			Whom_ID: follow_user_id,
 		}
 
-		database.DB.Create(&follower)
+		err = database.DB.Create(&follower).Error
+		if err != nil {
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		}
 
 		c.String(204, "")
 
@@ -292,7 +302,7 @@ func simPostUserFllws(c *gin.Context) {
 
 		unfollow_user_id, err := getUserId(body.Unfollow)
 		if err != nil {
-			log.Print(err)
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 			c.AbortWithStatus(404)
 			return
 		}
@@ -302,10 +312,14 @@ func simPostUserFllws(c *gin.Context) {
 			Whom_ID: unfollow_user_id,
 		}
 
-		database.DB.Where("whom_id = ? and who_id = ?", follower.Whom_ID, follower.Who_ID).Delete(&follower)
+		err = database.DB.Where("whom_id = ? and who_id = ?", follower.Whom_ID, follower.Who_ID).Delete(&follower).Error
+		if err != nil {
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		}
 
 		c.String(204, "")
 	} else {
+		log.Print("Bad request " + c.Request.RequestURI + ": " + "neither body.Follow nor body.Unfollow set")
 		c.String(400, "")
 	}
 

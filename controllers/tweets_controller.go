@@ -24,6 +24,7 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 	var messages []entities.Message
 
 	if err := database.DB.Where("Flagged = false").Order("Pub_Date desc").Limit(Per_page).Find(&messages).Error; err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(400)
 		return
 	}
@@ -49,7 +50,7 @@ func timeline(c *gin.Context) {
 		Joins("left join followers on messages.author_id = followers.whom_id").
 		Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
 		Limit(Per_page).Find(&messages).Error; err != nil { // ORDER BY DATE
-		log.Print(err)
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 	}
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
@@ -61,6 +62,7 @@ func timeline(c *gin.Context) {
 func addMessage(c *gin.Context) { //Registers a new message for the user.
 
 	if user == -1 {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
 		c.AbortWithStatus(401)
 		return
 	}
@@ -78,9 +80,9 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 		Flagged:   false,
 	}
 
-	result := database.DB.Create(&message)
-
-	if result.Error != nil {
+	err := database.DB.Create(&message).Error
+	if err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.Status(400)
 		return
 	}
