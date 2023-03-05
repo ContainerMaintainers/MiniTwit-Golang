@@ -1,5 +1,5 @@
 <!doctype html>
-<title>{% block title %}Public Timeline{% endblock %}</title>
+<title>Public Timeline</title>
 <link rel=stylesheet type=text/css href="../static/style.css">
 <div class=page>
   <h1>MiniTwit</h1>
@@ -18,7 +18,7 @@
     {{ if .user }}
     <!-- <h2>What's on your mind?</h2> -->
       <div class=twitbox>
-        <h3>What's on your mind {{ .user.username }}?</h3>
+        <h3>What's on your mind {{ .user }}?</h3>
         <form action="/add_message" method=post>
         <dl>
           <dd><input type=text name=text size=60></dd>
@@ -28,11 +28,21 @@
     {{ end }}
     <h2>Twits</h2>
     <ul class=messages>
+    {{ range .messages }}
+      <li><img src="http://www.gravatar.com/avatar/{{ .Author_id }}?d=identicon&amp;s=48"><p>
+        <strong><a href="/{{ .Author_id }}">{{ .Author_id }}</a></strong>
+        {{ .Text }}
+        <small>&mdash; {{ .Pub_Date }}</small>
+    {{ else }}
+      <li><em>There's no message so far.</em>
+    {{ end }}
+    </ul>
+    <!--<ul class=messages>
         {{ range .messages }}
-            <li>{{ .Text }} - {{ .Author_id }}</li>
+            <li>{{ .Author_id }} - {{ .Text }}  {{ .Pub_Date }}</li>
         {{ end }}
     </ul>
-  </div>
+  </div>-->
   <div class=footer>
     MiniTwit &mdash; A Gin Web Application
   </div>
