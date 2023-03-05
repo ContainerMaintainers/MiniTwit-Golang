@@ -2,13 +2,6 @@
 name: Continuous Deployment
 
 on:
-  push:
-    # Run workflow every time something is pushed to the main branch
-    branches:
-      - main
-      - master
-      - enabler/test-workflow
-  # allow manual triggers for now too
   workflow_dispatch:
     inputs:
       logLevel:
