@@ -4,11 +4,28 @@
 <div class=page>
   <h1>MiniTwit</h1>
   <div class=navigation>
+  {{ if .user }}  
+    <a href="/">my timeline</a> |
+    <a href="/public">public</a> |
+    <a href="/logout">sign out</a>
+  {{ else }}
     <a href="/public">public timeline</a> |
     <a href="/register">sign up</a> |
     <a href="/login">sign in</a>
+  {{ end }}
   </div>
   <div class=body>
+    {{ if .user }}
+    <!-- <h2>What's on your mind?</h2> -->
+      <div class=twitbox>
+        <h3>What's on your mind {{ .user.username }}?</h3>
+        <form action="/add_message" method=post>
+        <dl>
+          <dd><input type=text name=text size=60></dd>
+          <dd><input type=submit value="Share"></dd>
+        </form>
+      </div>
+    {{ end }}
     <h2>Twits</h2>
     <ul class=messages>
         {{ range .messages }}
