@@ -78,6 +78,7 @@ func username(c *gin.Context) { //Displays a user's tweets
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messagesFromUser": messagesFromUser,
+		"username":	username,
 	})
 
 }
@@ -166,6 +167,7 @@ func login_user(c *gin.Context) { //Logs the user in.
 		user_path := "/" + body.Username
 		location := url.URL{Path: user_path}
 		c.Redirect(http.StatusFound, location.RequestURI())
+		c.SetCookie("user", body.Username, 3600, "/", "/", false, false)
 
 		// Temporarily dont redirect
 		//c.String(200, "You were logged in")

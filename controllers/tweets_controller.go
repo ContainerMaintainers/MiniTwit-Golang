@@ -31,6 +31,7 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messages": messages,
+		"user":		user,
 	})
 }
 
@@ -39,24 +40,24 @@ func timeline(c *gin.Context) {
 	
 	// check if there exists a session user, if not, return all messages
 	// For now just reuse the same endpoint handler as /public
+	username, _ := c.Cookie("user")
 	if user == -1 {
 		public(c)
-		return
+	} else {
+		var messages []entities.Message
+
+		if err := database.DB.Table("messages").
+			Joins("left join followers on messages.author_id = followers.whom_id").
+			Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
+			Limit(Per_page).Find(&messages).Error; err != nil { // ORDER BY DATE
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		}
+
+		c.HTML(http.StatusOK, "timeline.html", gin.H{
+			"messages": messages,
+			"user": username,
+		})
 	}
-
-	var messages []entities.Message
-
-	if err := database.DB.Table("messages").
-		Joins("left join followers on messages.author_id = followers.whom_id").
-		Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
-		Limit(Per_page).Find(&messages).Error; err != nil { // ORDER BY DATE
-		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-	}
-
-	c.HTML(http.StatusOK, "timeline.html", gin.H{
-		"messages": messages,
-		"user":     user,
-	})
 }
 
 // ENDPOINT: POST /add_message
