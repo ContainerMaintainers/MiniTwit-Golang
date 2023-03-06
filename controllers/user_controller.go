@@ -79,6 +79,7 @@ func username(c *gin.Context) { //Displays a user's tweets
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messagesFromUser": messagesFromUser,
 		"username":	username,
+		"user": user,
 	})
 
 }

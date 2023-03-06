@@ -31,7 +31,7 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messages": messages,
-		"user":		user,
+		//"user":		user,
 	})
 }
 
@@ -55,7 +55,8 @@ func timeline(c *gin.Context) {
 
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
 			"messages": messages,
-			"user": username,
+			"user": user,
+			"username": username,
 		})
 	}
 }
