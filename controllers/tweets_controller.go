@@ -60,7 +60,6 @@ func timeline(c *gin.Context) {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
 			"messages": messages,
 			"user": user,
-			//"username": username,
 		})
 	}
 }
@@ -118,7 +117,7 @@ func SetupRouter() *gin.Engine {
 	router.POST("/login", login_user)
 	router.GET("/login", loginf)
 	router.GET("/logout", logout_user)
-	router.PUT("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
+	//router.PUT("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
 
 	router.GET("/sim/latest", simLatest)
 	router.POST("/sim/register", simRegister)

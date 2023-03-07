@@ -184,19 +184,11 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 // ENDPOINT: GET /logout
 func logout_user(c *gin.Context) {
-
-	//location := url.URL{Path: "/"}
-	c.Redirect(http.StatusFound, "/")
-}
-
-
-// ENDPOINT: PUT /logout
-func logoutf(c *gin.Context) {
 	//clear session user
 	user = -1
-
-	//c.Redirect(200, "/")
-	c.String(200, "You were logged out")
+	
+	//c.String(200, "You were logged out")
+	c.Redirect(http.StatusFound, "/")
 }
 
 // ENDPOINT: GET /register
