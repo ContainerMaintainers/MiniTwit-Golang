@@ -168,8 +168,8 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 		//redirect to timeline ("/")
 		//c.Redirect(200, "/")
-		user_path := "/" + body.Username
-		location := url.URL{Path: user_path}
+		//user_path := "/" + body.Username
+		location := url.URL{Path: "/"}
 		c.Redirect(http.StatusFound, location.RequestURI())
 		c.SetCookie("user", body.Username, 3600, "/", "/", false, false)
 
