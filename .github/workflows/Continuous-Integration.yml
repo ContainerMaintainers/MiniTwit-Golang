@@ -1,0 +1,40 @@
+name: Docker Image CD
+
+on:
+  workflow_run:
+    workflows:
+      - "Continuous Integration"
+    types:
+      - completed
+    branches:
+      - development
+      - enabler/pipeline
+
+
+
+
+jobs:
+  build-push-images:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - uses: actions/checkout@v3
+      - name: Build the Docker image for webserver
+        run: docker build -t webserver .
+
+      - name: GitHub Action for DigitalOcean - doctl
+        # You may pin to the exact commit or the version.
+        # uses: digitalocean/action-doctl@ba7726ed64a9c5eb774152b1ea03bf67ee81ad6e
+        uses: digitalocean/action-doctl@v2.3.0
+        with:
+          token: '{{ secrets.DIGITAL_OCEAN_TOKEN }}'
+          
+      - name: doctl registry login
+        run: doctl registry login
+          
+      - name: Tag and push webserver Docker image to DigitalOcean Container Registry
+        run: |
+          docker tag webserver:latest registry.digitalocean.com/minitwit/webserver:latest
+          docker push registry.digitalocean.com/minitwit/webserver:latest
+          
+# Inspired by group CI-CDont
