@@ -70,7 +70,10 @@ func username(c *gin.Context) { //Displays a user's tweets
 
 	var messagesFromUser []entities.Message
 
-	if err := database.DB.Where("author_id = ?", userID).Limit(Per_page).Find(&messagesFromUser).Error; err != nil {
+	if err := database.DB.
+		Where("author_id = ?", userID).
+		Limit(Per_page).
+		Find(&messagesFromUser).Error; err != nil {
 		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(404)
 		return
@@ -179,13 +182,20 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 }
 
+// ENDPOINT: GET /logout
+func logout_user(c *gin.Context) {
+
+	//location := url.URL{Path: "/"}
+	c.Redirect(http.StatusFound, "/")
+}
+
+
 // ENDPOINT: PUT /logout
 func logoutf(c *gin.Context) {
 	//clear session user
 	user = -1
 
 	//c.Redirect(200, "/")
-	// Temporarily don't redirect
 	c.String(200, "You were logged out")
 }
 
