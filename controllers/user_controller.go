@@ -68,7 +68,7 @@ func username(c *gin.Context) { //Displays a user's tweets
 		return
 	}
 
-	var messagesFromUser []entities.Message
+	/*var messagesFromUser []entities.Message
 
 	if err := database.DB.
 		Where("author_id = ?", userID).
@@ -83,6 +83,26 @@ func username(c *gin.Context) { //Displays a user's tweets
 		"messages": messagesFromUser,
 		"username":	username,
 		"user": user,
+	})*/
+	type result struct {
+		Author_id uint
+		Username  string
+		Text	  string
+		Pub_Date  uint
+		}
+		  
+	var results []result
+	
+	// Join messages and users tables
+	database.DB.Table("messages").
+		Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
+		Joins("left join users on users.id = messages.Author_id").
+		Where("messages.flagged = ? AND (messages.author_id = ?)", false, userID).
+		Scan(&results)
+
+	c.HTML(http.StatusOK, "timeline.html", gin.H{
+		"messages": results,
+		"user": userID,
 	})
 
 }
