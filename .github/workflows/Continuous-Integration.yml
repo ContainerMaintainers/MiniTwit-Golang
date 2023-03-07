@@ -1,4 +1,4 @@
-name: Docker Image CD
+name: Minitwit Continuous Integration
 
 on:
   push:
