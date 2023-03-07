@@ -21,19 +21,6 @@ func ping(c *gin.Context) {
 // ENDPOINT: GET /public
 func public(c *gin.Context) { //Displays the latest messages of all users
 
-	//var messages []entities.Message
-/*
-	if err := database.DB.Table("messages").
-		Joins("join users on messages.author_id = users.id").
-		Where("Flagged = false").
-		Order("Pub_Date desc").
-		Limit(Per_page).
-		Find(&messages).Error; err != nil {
-			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-			c.AbortWithStatus(400)
-			return
-		}*/
-
 	type result struct {
 		Author_id uint
 		Username  string
@@ -42,10 +29,11 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 		}
 		  
 	var results []result
-
-	database.DB.Table("messages").Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").Joins("left join users on users.id = messages.Author_id").Scan(&results)
-	//database.DB.Model(&message{}).Select("messages.Author_id", "messages.Text", "messages.Pub_Date").Joins("left join users on users.id = messages.Author_id").Scan(&result{})
-	// SELECT users.name, emails.email FROM `users` left join emails on emails.user_id = users.id
+	
+	// Join messages and users tables
+	database.DB.Table("messages").
+		Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
+		Joins("left join users on users.id = messages.Author_id").Scan(&results)
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messages": results,
@@ -55,7 +43,7 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 // ENDPOINT: GET /
 func timeline(c *gin.Context) {
 	
-	// check if there exists a session user, if not, return all messages
+	// check if there exists a session user, else show my_timeline
 	//username, _ := c.Cookie("user")
 	if user == -1 {
 		public(c)
