@@ -13,9 +13,6 @@ on:
       - development
       - enabler/pipeline
 
-
-
-
 jobs:
   build-push-images:
     runs-on: ubuntu-latest
@@ -30,7 +27,7 @@ jobs:
         # uses: digitalocean/action-doctl@ba7726ed64a9c5eb774152b1ea03bf67ee81ad6e
         uses: digitalocean/action-doctl@v2.3.0
         with:
-          token: '{{ secrets.DIGITAL_OCEAN_REGISTRY }}'
+          token: ${{ secrets.DIGITAL_OCEAN_REGISTRY }}
           
       - name: doctl registry login
         run: doctl registry login
