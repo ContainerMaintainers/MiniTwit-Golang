@@ -23,11 +23,16 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 
 	var messages []entities.Message
 
-	if err := database.DB.Where("Flagged = false").Order("Pub_Date desc").Limit(Per_page).Find(&messages).Error; err != nil {
-		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-		c.AbortWithStatus(400)
-		return
-	}
+	if err := database.DB.Table("messages").
+		Joins("join users on messages.author_id = users.id").
+		Where("Flagged = false").
+		Order("Pub_Date desc").
+		Limit(Per_page).
+		Find(&messages).Error; err != nil {
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+			c.AbortWithStatus(400)
+			return
+		}
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messages": messages,
@@ -38,25 +43,25 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 func timeline(c *gin.Context) {
 	
 	// check if there exists a session user, if not, return all messages
-	// For now just reuse the same endpoint handler as /public
+	//username, _ := c.Cookie("user")
 	if user == -1 {
 		public(c)
-		return
+	} else {
+		var messages []entities.Message
+
+		if err := database.DB.Table("messages").
+			Joins("left join followers on messages.author_id = followers.whom_id").
+			//Joins("join users on messages.author_id = users.id").
+			Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
+			Limit(Per_page).Find(&messages).Error; err != nil { // ORDER BY DATE
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		}
+
+		c.HTML(http.StatusOK, "timeline.html", gin.H{
+			"messages": messages,
+			"user": user,
+		})
 	}
-
-	var messages []entities.Message
-
-	if err := database.DB.Table("messages").
-		Joins("left join followers on messages.author_id = followers.whom_id").
-		Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
-		Limit(Per_page).Find(&messages).Error; err != nil { // ORDER BY DATE
-		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-	}
-
-	c.HTML(http.StatusOK, "timeline.html", gin.H{
-		"messages": messages,
-		"user":     user,
-	})
 }
 
 // ENDPOINT: POST /add_message
@@ -90,7 +95,6 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 
 	//redirect to timeline ("/")
 	//c.Redirect(200, "/") // For some reason, this returns error 500, but I assume it's because the path doesn't exist yet?
-	// Temporarily dont redirect
 	c.String(200, "Your message was recorded")
 
 }
@@ -112,7 +116,8 @@ func SetupRouter() *gin.Engine {
 	router.POST("/add_message", addMessage)
 	router.POST("/login", login_user)
 	router.GET("/login", loginf)
-	router.PUT("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
+	router.GET("/logout", logout_user)
+	//router.PUT("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
 
 	router.GET("/sim/latest", simLatest)
 	router.POST("/sim/register", simRegister)

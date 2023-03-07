@@ -70,7 +70,10 @@ func username(c *gin.Context) { //Displays a user's tweets
 
 	var messagesFromUser []entities.Message
 
-	if err := database.DB.Where("author_id = ?", userID).Limit(Per_page).Find(&messagesFromUser).Error; err != nil {
+	if err := database.DB.
+		Where("author_id = ?", userID).
+		Limit(Per_page).
+		Find(&messagesFromUser).Error; err != nil {
 		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.AbortWithStatus(404)
 		return
@@ -78,6 +81,8 @@ func username(c *gin.Context) { //Displays a user's tweets
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messagesFromUser": messagesFromUser,
+		"username":	username,
+		"user": user,
 	})
 
 }
@@ -166,6 +171,7 @@ func login_user(c *gin.Context) { //Logs the user in.
 		user_path := "/" + body.Username
 		location := url.URL{Path: user_path}
 		c.Redirect(http.StatusFound, location.RequestURI())
+		c.SetCookie("user", body.Username, 3600, "/", "/", false, false)
 
 		// Temporarily dont redirect
 		//c.String(200, "You were logged in")
@@ -176,14 +182,13 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 }
 
-// ENDPOINT: PUT /logout
-func logoutf(c *gin.Context) {
+// ENDPOINT: GET /logout
+func logout_user(c *gin.Context) {
 	//clear session user
 	user = -1
-
-	//c.Redirect(200, "/")
-	// Temporarily don't redirect
-	c.String(200, "You were logged out")
+	
+	//c.String(200, "You were logged out")
+	c.Redirect(http.StatusFound, "/")
 }
 
 // ENDPOINT: GET /register
