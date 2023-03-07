@@ -1,4 +1,4 @@
-name: Minitwit Continuous Integration
+name: Minitwit Continuous Deployment
 
 on:
   push:
