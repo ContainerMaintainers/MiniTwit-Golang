@@ -1,6 +1,9 @@
 name: Docker Image CD
 
 on:
+  push:
+    branches:
+      - enabler/pipeline
   workflow_run:
     workflows:
       - "Continuous Integration"
