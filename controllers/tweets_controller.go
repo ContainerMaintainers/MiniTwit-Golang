@@ -21,8 +21,8 @@ func ping(c *gin.Context) {
 // ENDPOINT: GET /public
 func public(c *gin.Context) { //Displays the latest messages of all users
 
-	var messages []entities.Message
-
+	//var messages []entities.Message
+/*
 	if err := database.DB.Table("messages").
 		Joins("join users on messages.author_id = users.id").
 		Where("Flagged = false").
@@ -32,10 +32,23 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 			c.AbortWithStatus(400)
 			return
+		}*/
+
+	type result struct {
+		Author_id uint
+		Username  string
+		Text	  string
+		Pub_Date  uint
 		}
+		  
+	var results []result
+
+	database.DB.Table("messages").Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").Joins("left join users on users.id = messages.Author_id").Scan(&results)
+	//database.DB.Model(&message{}).Select("messages.Author_id", "messages.Text", "messages.Pub_Date").Joins("left join users on users.id = messages.Author_id").Scan(&result{})
+	// SELECT users.name, emails.email FROM `users` left join emails on emails.user_id = users.id
 
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
-		"messages": messages,
+		"messages": results,
 	})
 }
 

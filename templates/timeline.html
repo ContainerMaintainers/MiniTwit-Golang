@@ -36,7 +36,7 @@
     <ul class=messages>
     {{ range .messages }}
       <li><img src="http://www.gravatar.com/avatar/{{ .Author_id }}?d=identicon&amp;s=48"><p>
-        <strong><a href="/{{ .Author_id }}">{{ .Author_id }}</a></strong>
+        <strong><a href="/{{ .Username }}">{{ .Username }}</a></strong>
         {{ .Text }}
         <small>&mdash; {{ .Pub_Date }}</small>
     {{ else }}
