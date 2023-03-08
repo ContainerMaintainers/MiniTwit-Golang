@@ -68,22 +68,6 @@ func username(c *gin.Context) { //Displays a user's tweets
 		return
 	}
 
-	/*var messagesFromUser []entities.Message
-
-	if err := database.DB.
-		Where("author_id = ?", userID).
-		Limit(Per_page).
-		Find(&messagesFromUser).Error; err != nil {
-		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-		c.AbortWithStatus(404)
-		return
-	}
-
-	c.HTML(http.StatusOK, "timeline.html", gin.H{
-		"messages": messagesFromUser,
-		"username":	username,
-		"user": user,
-	})*/
 	type result struct {
 		Author_id uint
 		Username  string
@@ -223,6 +207,43 @@ func loginf(c *gin.Context) {
 	})
 }
 
+// Registration Helper Function
+func ValidRegistration(c *gin.Context, username string, email string, password1 string, password2 string) bool {
+	
+	//error = ""
+	if password1 == "" || email == "" || username == "" {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Missing Field")
+		//err = "All fields are required"
+		c.HTML(http.StatusOK, "register.html", gin.H{
+			"error": "All fields are required",
+		})
+		return false
+	} else if email == "" || !strings.Contains(email, "@") {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Invalid email")
+		//err = "You have to enter a valid email address"
+		c.HTML(http.StatusOK, "register.html", gin.H{
+			"error": "You have to enter a valid email address",
+		})
+		return false
+	} else if password1 != password2 {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Passwords do not match")
+		//err = "The two passwords do not match"
+		c.HTML(http.StatusOK, "register.html", gin.H{
+			"error": "The two passwords do not match",
+		})
+		return false
+	} else if _, err := getUserId(username); err == nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + " Username already taken")
+		//err = "The username is already taken"
+		c.HTML(http.StatusOK, "register.html", gin.H{
+			"error": "The username is already taken",
+		})
+		return false
+	}
+	return true
+}
+
+
 // ENDPOINT: POST /register
 func register_user(c *gin.Context) {
 
@@ -242,7 +263,7 @@ func register_user(c *gin.Context) {
 
 	error := ""
 
-	if body.Username == "" {
+	/*if body.Username == "" {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No username provided")
 		error = "You have to enter a username"
 	} else if body.Email == "" || !strings.Contains(body.Email, "@") {
@@ -257,9 +278,8 @@ func register_user(c *gin.Context) {
 	} else if _, err := getUserId(body.Username); err == nil {
 		log.Print("Ran into error during " + c.Request.RequestURI + ": " + " Username already taken")
 		error = "The username is already taken"
-	}
-
-	if error == "" {
+	}*/
+	if ValidRegistration(c, body.Username, body.Email, body.Password, body.Password2) {
 		user := entities.User{
 			Username: body.Username,
 			Email:    body.Email,
