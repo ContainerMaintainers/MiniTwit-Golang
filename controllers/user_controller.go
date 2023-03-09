@@ -67,33 +67,43 @@ func username(c *gin.Context) { // Displays a user's tweets
 	if username != "" { 
 		// if logged in
 		if user != -1 {
-			//followed := GetFollower(GetUser(username).ID, GetUser(user).ID)
+			//followed := GetFollower(getUserId(username), user)
 			var users_page = false
-			// If logged in is same as username endpoint
+			// If logged in user == endpoint
 			if user == int(userID) {
 				users_page = true
+
+				c.HTML(http.StatusOK, "timeline.html", gin.H{
+					"title":     "My Timeline",
+					"user":      user,
+					"private":   true,
+					"user_page": true,
+					"messages":  GetMessages("myTimeline", user),
+				})
+			} else {
+				// If logged in and user != endpoint
+				c.HTML(http.StatusOK, "timeline.html", gin.H{
+					"title":         username + "'s Timeline Test 1",
+					"user_timeline": true,
+					"private":       true, 
+					"user":          username,
+					//"followed":      followed,
+					"user_page":     users_page, 
+					"messages":      GetMessages("individual", user),
+				})
 			}
-			c.HTML(http.StatusOK, "timeline.html", gin.H{
-				"title":         username + "'s Timeline",
-				"user_timeline": true,
-				"private":       true,
-				"user":          username,
-				//"followed":      followed,
-				"user_page":     users_page,
-				"messages":      GetMessages("myTimeline", user),
-			})
 		} else {
 			// If not logged in
 			c.HTML(http.StatusOK, "timeline.html", gin.H{
-				"title":         username + "'s Timeline",
+				"title":         username + "'s Timeline Test 2",
 				"user_timeline": true,
 				"private":       true,
 				"messages":      GetMessages("individual", int(userID)),
 			})
 		}
 	} else {
-		// if logged in
-		c.HTML(http.StatusOK, "timeline.tpl", gin.H{
+		// if logged in and 
+		c.HTML(http.StatusOK, "timeline.html", gin.H{
 			"title":     "My Timeline",
 			"user":      user,
 			"private":   true,
@@ -101,12 +111,6 @@ func username(c *gin.Context) { // Displays a user's tweets
 			"messages":  GetMessages("myTimeline", user),
 		})
 	}
-
-
-	/*c.HTML(http.StatusOK, "timeline.html", gin.H{
-		"messages": GetMessages("individual", int(userID)),
-		"user": userID,
-	})*/
 
 }
 
