@@ -64,25 +64,9 @@ func username(c *gin.Context) { // Displays a user's tweets
 		c.Status(404)
 		return
 	}
-
-	type result struct {
-		Author_id uint
-		Username  string
-		Text	  string
-		Pub_Date  uint
-		}
-		  
-	var results []result
 	
-	// Join messages and users tables
-	database.DB.Table("messages").
-		Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
-		Joins("left join users on users.id = messages.Author_id").
-		Where("messages.flagged = ? AND (messages.author_id = ?)", false, userID).
-		Scan(&results)
-
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
-		"messages": results,
+		"messages": GetMessages("individual", int(userID)),
 		"user": userID,
 	})
 
@@ -98,9 +82,7 @@ func usernameUnfollow(c *gin.Context) { // Adds the current user as follower of 
 	}
 
 	username := c.Param("username")
-
 	who := uint(user) // SHOULD GET SESSION USER ID
-
 	whom, err := getUserId(username)
 	if err != nil {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
