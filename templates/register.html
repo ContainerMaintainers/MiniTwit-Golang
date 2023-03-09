@@ -23,6 +23,7 @@
   {{range .flashes}}{{.}}{{end}}
   <div class=body>
     <h2>Sign Up</h2>
+    {{ if .error }}<div class=error><strong>Error:</strong> {{ .error }}</div>{{ end }}
     <form action="/register" method=post>
         <dl>
           <dt>Username:

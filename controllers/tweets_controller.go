@@ -11,6 +11,38 @@ import (
 
 const Per_page int = 30
 
+type JoinedMessage struct {
+	Author_id uint
+	Username  string
+	Text	  string
+	Pub_Date  uint
+	}
+
+func GetMessages(timelineType string, user int) []JoinedMessage {
+	
+	var joinedMessages []JoinedMessage
+	
+	if timelineType == "public" {
+		// Join messages and users tables for public timeline
+		database.DB.Table("messages").
+		Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
+		Joins("left join users on users.id = messages.Author_id").Scan(&joinedMessages)
+
+	} else if timelineType == "myTimeline" {
+		// Join messages, users, and followers for my timeline
+		database.DB.Table("messages").
+			Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
+			Joins("left join followers on messages.author_id = followers.whom_id").
+			Joins("left join users on users.id = messages.Author_id").
+			Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
+			Scan(&joinedMessages)
+
+	}
+
+	return joinedMessages
+	
+}
+
 // ENDPOINT: GET /ping
 func ping(c *gin.Context) {
 	c.JSON(200, gin.H{
@@ -19,46 +51,41 @@ func ping(c *gin.Context) {
 }
 
 // ENDPOINT: GET /public
-func public(c *gin.Context) { //Displays the latest messages of all users
-
-	var messages []entities.Message
-
-	if err := database.DB.Table("messages").
-		Joins("join users on messages.author_id = users.id").
-		Where("Flagged = false").
-		Order("Pub_Date desc").
-		Limit(Per_page).
-		Find(&messages).Error; err != nil {
-			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-			c.AbortWithStatus(400)
-			return
-		}
-
+func public(c *gin.Context) { 
+	
+	//Displays the latest messages of all users
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
-		"messages": messages,
+		"messages": GetMessages("public", user),
 	})
 }
 
 // ENDPOINT: GET /
 func timeline(c *gin.Context) {
 	
-	// check if there exists a session user, if not, return all messages
+	// check if there exists a session user, else show my_timeline
 	//username, _ := c.Cookie("user")
 	if user == -1 {
 		public(c)
 	} else {
-		var messages []entities.Message
-
-		if err := database.DB.Table("messages").
+		/*type result struct {
+			Author_id uint
+			Username  string
+			Text	  string
+			Pub_Date  uint
+			}
+			  
+		var results []result
+		
+		// Join messages and users tables
+		database.DB.Table("messages").
+			Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
 			Joins("left join followers on messages.author_id = followers.whom_id").
-			//Joins("join users on messages.author_id = users.id").
+			Joins("left join users on users.id = messages.Author_id").
 			Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
-			Limit(Per_page).Find(&messages).Error; err != nil { // ORDER BY DATE
-			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-		}
+			Scan(&results)*/
 
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": messages,
+			"messages": GetMessages("myTimeline", user),
 			"user": user,
 		})
 	}
