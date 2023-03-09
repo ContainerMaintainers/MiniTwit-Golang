@@ -83,7 +83,7 @@ func username(c *gin.Context) { // Displays a user's tweets
 			} else {
 				// If logged in and user != endpoint
 				c.HTML(http.StatusOK, "timeline.html", gin.H{
-					"title":         username + "'s Timeline Test 1",
+					"title":         username + "'s Timeline",
 					"user_timeline": true,
 					"private":       true, 
 					"user":          username,
@@ -95,23 +95,13 @@ func username(c *gin.Context) { // Displays a user's tweets
 		} else {
 			// If not logged in
 			c.HTML(http.StatusOK, "timeline.html", gin.H{
-				"title":         username + "'s Timeline Test 2",
+				"title":         username + "'s Timeline",
 				"user_timeline": true,
 				"private":       true,
 				"messages":      GetMessages("individual", int(userID)),
 			})
 		}
-	} else {
-		// if logged in and 
-		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"title":     "My Timeline",
-			"user":      user,
-			"private":   true,
-			"user_page": true,
-			"messages":  GetMessages("myTimeline", user),
-		})
-	}
-
+	} 
 }
 
 // ENDPOINT: DELETE /:username/unfollow
