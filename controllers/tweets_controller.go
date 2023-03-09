@@ -56,8 +56,8 @@ func ping(c *gin.Context) {
 	})
 }
 
-// ENDPOINT: GET /public
-func public(c *gin.Context) { 
+// ENDPOINT: GET /
+func timeline(c *gin.Context) { 
 	
 	//username, _ := c.Cookie("user")
 
@@ -75,12 +75,11 @@ func public(c *gin.Context) {
 	}
 }
 
-// ENDPOINT: GET /
-func timeline(c *gin.Context) {
+// ENDPOINT: GET /public
+func public(c *gin.Context) {
 	// This function seems redundant...
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
-		"messages": GetMessages("myTimeline", user),
-		"user": user,
+		"messages": GetMessages("public", user),
 	})
 	
 }

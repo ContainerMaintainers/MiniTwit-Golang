@@ -57,18 +57,56 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 func username(c *gin.Context) { // Displays a user's tweets
 
 	username := c.Param("username") // gets the <username> from the url
-
 	userID, err := getUserId(username)
 	if err != nil {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
 		c.Status(404)
 		return
 	}
-	
-	c.HTML(http.StatusOK, "timeline.html", gin.H{
+	// if endpoint is a username
+	if username != "" { 
+		// if logged in
+		if user != -1 {
+			//followed := GetFollower(GetUser(username).ID, GetUser(user).ID)
+			var users_page = false
+			// If logged in is same as username endpoint
+			if user == int(userID) {
+				users_page = true
+			}
+			c.HTML(http.StatusOK, "timeline.html", gin.H{
+				"title":         username + "'s Timeline",
+				"user_timeline": true,
+				"private":       true,
+				"user":          username,
+				//"followed":      followed,
+				"user_page":     users_page,
+				"messages":      GetMessages("myTimeline", user),
+			})
+		} else {
+			// If not logged in
+			c.HTML(http.StatusOK, "timeline.html", gin.H{
+				"title":         username + "'s Timeline",
+				"user_timeline": true,
+				"private":       true,
+				"messages":      GetMessages("individual", int(userID)),
+			})
+		}
+	} else {
+		// if logged in
+		c.HTML(http.StatusOK, "timeline.tpl", gin.H{
+			"title":     "My Timeline",
+			"user":      user,
+			"private":   true,
+			"user_page": true,
+			"messages":  GetMessages("myTimeline", user),
+		})
+	}
+
+
+	/*c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"messages": GetMessages("individual", int(userID)),
 		"user": userID,
-	})
+	})*/
 
 }
 
