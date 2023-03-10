@@ -100,7 +100,7 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	c.Bind(&body)
 
 	message := entities.Message{
-		Author_id: uint(user), // AUTHOR ID SHOULD GET SESSION USER ID
+		Author_id: uint(user), // GET SESSION USER ID
 		Text:      body.Text,
 		Pub_Date:  uint(time.Now().Unix()),
 		Flagged:   false,
@@ -114,7 +114,9 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	}
 
 	//redirect to timeline ("/")
-	c.String(200, "Your message was recorded")
+	//location := url.URL{Path: "/"}
+	c.Redirect(http.StatusFound, "/")
+	//c.String(200, "Your message was recorded")
 
 }
 
