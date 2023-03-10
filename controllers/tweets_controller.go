@@ -89,6 +89,71 @@ func public(c *gin.Context) {
 	}
 }
 
+// ENDPOINT: GET /:username
+func username(c *gin.Context) { // Displays an individual's timeline
+
+	username := c.Param("username") // gets the <username> from the url
+	userID, err := getUserId(username)
+	if err != nil {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
+		c.Status(404)
+		return
+	}
+	// if endpoint is a username
+	if username != "" { 
+		// if logged in
+		if user != -1 {
+			followed := GetFollower(uint(userID), uint(user))
+			var users_page = false
+			// If logged in user == endpoint
+			if user == int(userID) {
+				users_page = true
+
+				c.HTML(http.StatusOK, "timeline.html", gin.H{
+					"title":     "My Timeline ONE",
+					"user":      user,
+					"private":   true,
+					"user_page": true,
+					"messages":  GetMessages("myTimeline", user),
+				})
+			} else {
+				// If following
+				if followed == true {
+					// If logged in and user != endpoint
+					c.HTML(http.StatusOK, "timeline.html", gin.H{
+						"title":         username + "'s Timeline TWO",
+						"user_timeline": true,
+						"private":       true, 
+						"user":          username,
+						"followed":      followed,
+						"user_page":     users_page, 
+						"messages":      GetMessages("individual", int(userID)),
+					})
+				} else {
+				// If not following	
+					// If logged in and user != endpoint
+					c.HTML(http.StatusOK, "timeline.html", gin.H{
+						"title":         username + "'s Timeline THREE",
+						"user_timeline": true,
+						"private":       true, 
+						"user":          username,
+						"user_page":     users_page, 
+						"messages":      GetMessages("individual", int(userID)),
+					})
+				}	
+			}
+		} else {
+			// If not logged in
+			c.HTML(http.StatusOK, "timeline.html", gin.H{
+				"title":         username + "'s Timeline FOUR",
+				"user_timeline": true,
+				"private":       true,
+				"messages":      GetMessages("individual", int(userID)),
+			})
+		}
+	} 
+}
+
 // ENDPOINT: POST /add_message
 func addMessage(c *gin.Context) { //Registers a new message for the user.
 
@@ -118,7 +183,6 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 		return
 	}
 
-	//redirect to timeline ("/")
 	c.Redirect(http.StatusFound, "/")
 
 }
@@ -134,7 +198,7 @@ func SetupRouter() *gin.Engine {
 	router.GET("/public", public)
 	router.GET("/:username", username)
 	router.GET("/:username/follow", usernameFollow)
-	router.DELETE("/:username/unfollow", usernameUnfollow)
+	router.GET("/:username/unfollow", usernameUnfollow)
 	router.POST("/register", register_user)
 	router.GET("/register", register)
 	router.POST("/add_message", addMessage)

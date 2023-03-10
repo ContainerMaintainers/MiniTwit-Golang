@@ -30,10 +30,10 @@
               This is you!
             {{ else if .followed }}
               You are currently following this user.
-              <a class=unfollow href="/:username/unfollow">Unfollow user</a>.
+              <a class=unfollow href="/{{ .user }}/unfollow">Unfollow user</a>.
             {{ else }}
               You are not following this user.
-              <a class=follow href="/:username/follow">follow user</a>.
+              <a class=follow href="/{{ .user }}/follow">follow user</a>.
             {{ end }}
           </div>
         {{ end }}

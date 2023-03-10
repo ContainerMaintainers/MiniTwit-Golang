@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"github.com/gin-gonic/gin"
@@ -17,8 +17,8 @@ var (
 	user   = -1
 )
 
-// ENDPOINT: POST /:username/follow
-func usernameFollow(c *gin.Context) { //Adds the current user as follower of the given user
+// ENDPOINT: GET /:username/follow
+func usernameFollow(c *gin.Context) { // Adds the current user as follower of the given user
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
@@ -47,7 +47,7 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 			c.Status(400)
 			return
 		}
-		database.DB.Create(&follow)
+		//database.DB.Create(&follow)
 		//c.String(200, fmt.Sprintf("You are now following \"%s\"", username))
 		c.Redirect(http.StatusFound, "/"+username)
 	}
@@ -58,109 +58,43 @@ func GetFollower(follower uint, following uint) bool {
 	if follower == following {
 		return false
 	} else {
-		database.DB.Find(&follows).Where("follower = ?", following).Where("following = ?", follower).First(&follows)
+		database.DB.Find(&follows).Where("who_ID = ?", following).Where("whom_ID = ?", follower).First(&follows)
 		return len(follows) > 0
 	}
 }
 
-// ENDPOINT: GET /:username
-func username(c *gin.Context) { // Displays a user's tweets
-
-	username := c.Param("username") // gets the <username> from the url
-	userID, err := getUserId(username)
-	if err != nil {
-		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
-		c.Status(404)
-		return
-	}
-	// if endpoint is a username
-	if username != "" { 
-		// if logged in
-		if user != -1 {
-			followed := GetFollower(uint(userID), uint(user))
-			var users_page = false
-			// If logged in user == endpoint
-			if user == int(userID) {
-				users_page = true
-
-				c.HTML(http.StatusOK, "timeline.html", gin.H{
-					"title":     "My Timeline ONE",
-					"user":      user,
-					"private":   true,
-					"user_page": true,
-					"messages":  GetMessages("myTimeline", user),
-				})
-			} else {
-				// If not following
-				if followed == true {
-					// If logged in and user != endpoint
-					c.HTML(http.StatusOK, "timeline.html", gin.H{
-						"title":         username + "'s Timeline TWO",
-						"user_timeline": true,
-						"private":       true, 
-						"user":          username,
-						//"followed":      followed,
-						"user_page":     users_page, 
-						"messages":      GetMessages("individual", int(userID)),
-					})
-				} else {
-				// If following	
-					// If logged in and user != endpoint
-					c.HTML(http.StatusOK, "timeline.html", gin.H{
-						"title":         username + "'s Timeline TWO",
-						"user_timeline": true,
-						"private":       true, 
-						"user":          username,
-						"followed":      followed,
-						"user_page":     users_page, 
-						"messages":      GetMessages("individual", int(userID)),
-					})
-				}	
-			}
-		} else {
-			// If not logged in
-			c.HTML(http.StatusOK, "timeline.html", gin.H{
-				"title":         username + "'s Timeline THREE",
-				"user_timeline": true,
-				"private":       true,
-				"messages":      GetMessages("individual", int(userID)),
-			})
-		}
-	} 
-}
-
-// ENDPOINT: DELETE /:username/unfollow
+// ENDPOINT: GET /:username/unfollow
 func usernameUnfollow(c *gin.Context) { // Adds the current user as follower of the given user
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
 		c.AbortWithStatus(401)
 		return
+	} else {
+		username := c.Param("username")
+		who := uint(user) // SESSION USER ID
+		whom, err := getUserId(username)
+		if err != nil {
+			log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
+			c.Status(404)
+			return
+		}
+
+		unfollow := entities.Follower{
+			Who_ID:  who, 
+			Whom_ID: whom,
+		}
+
+		err = database.DB.Where("Who_ID = ? AND Whom_ID = ?", unfollow.Who_ID, unfollow.Whom_ID).Delete(&unfollow).Error
+		if err != nil { // when user is already following 'whom'
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+			c.Status(400)
+			return
+		}
+
+		//c.String(200, fmt.Sprintf("You are no longer following \"%s\"", username)) // Had to make it 200 to satisfy tests
+		c.Redirect(http.StatusFound, "/"+username)
 	}
-
-	username := c.Param("username")
-	who := uint(user) // SHOULD GET SESSION USER ID
-	whom, err := getUserId(username)
-	if err != nil {
-		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
-		c.Status(404)
-		return
-	}
-
-	unfollow := entities.Follower{
-		Who_ID:  who, 
-		Whom_ID: whom,
-	}
-
-	err = database.DB.Where("Who_ID = ? AND Whom_ID = ?", unfollow.Who_ID, unfollow.Whom_ID).Delete(&unfollow).Error
-	if err != nil { // when user is already following 'whom'
-		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-		c.Status(400)
-		return
-	}
-
-	c.String(200, fmt.Sprintf("You are no longer following \"%s\"", username)) // Had to make it 200 to satisfy tests for some reason
-
 }
 
 // ENDPOINT: POST /login
@@ -191,12 +125,12 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 	if error == "" {
 		// give message "You were logged in."
-		// set session user to body.Username
-
+		
 		if userID, err := getUserId(body.Username); err != nil {
 			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 			user = -1
 		} else {
+			// set session user to body.Username
 			user = int(userID)
 		}
 
@@ -208,7 +142,6 @@ func login_user(c *gin.Context) { //Logs the user in.
 	} else {
 		c.String(400, error)
 	}
-
 }
 
 // ENDPOINT: GET /logout
