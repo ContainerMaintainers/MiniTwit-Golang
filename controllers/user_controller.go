@@ -24,33 +24,43 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
 		c.AbortWithStatus(401)
 		return
+
+	} else {
+
+		username := c.Param("username")
+		who := uint(user) // SESSION USER ID
+		whom, err := getUserId(username)
+		if err != nil {
+			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+			c.Status(404)
+			return
+		}
+
+		follow := entities.Follower{
+			Who_ID:  who, 
+			Whom_ID: whom,
+		}
+
+		err = database.DB.Create(&follow).Error
+		if err != nil { //when user is already following 'whom'
+			log.Print("Bad request during " + c.Request.RequestURI + ": " + "Already following " + username)
+			c.Status(400)
+			return
+		}
+		database.DB.Create(&follow)
+		//c.String(200, fmt.Sprintf("You are now following \"%s\"", username))
+		c.Redirect(http.StatusFound, "/"+username)
 	}
+}
 
-	username := c.Param("username")
-
-	who := uint(user) // SESSION USER ID
-
-	whom, err := getUserId(username)
-	if err != nil {
-		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-		c.Status(404)
-		return
+func GetFollower(follower uint, following uint) bool {
+	var follows []entities.Follower
+	if follower == following {
+		return false
+	} else {
+		database.DB.Find(&follows).Where("follower = ?", following).Where("following = ?", follower).First(&follows)
+		return len(follows) > 0
 	}
-
-	follow := entities.Follower{
-		Who_ID:  who, 
-		Whom_ID: whom,
-	}
-
-	err = database.DB.Create(&follow).Error
-	if err != nil { //when user is already following 'whom'
-		log.Print("Bad request during " + c.Request.RequestURI + ": " + "Already following " + username)
-		c.Status(400)
-		return
-	}
-
-	c.String(200, fmt.Sprintf("You are now following \"%s\"", username))
-
 }
 
 // ENDPOINT: GET /:username
@@ -67,35 +77,50 @@ func username(c *gin.Context) { // Displays a user's tweets
 	if username != "" { 
 		// if logged in
 		if user != -1 {
-			//followed := GetFollower(getUserId(username), user)
+			followed := GetFollower(uint(userID), uint(user))
 			var users_page = false
 			// If logged in user == endpoint
 			if user == int(userID) {
 				users_page = true
 
 				c.HTML(http.StatusOK, "timeline.html", gin.H{
-					"title":     "My Timeline",
+					"title":     "My Timeline ONE",
 					"user":      user,
 					"private":   true,
 					"user_page": true,
 					"messages":  GetMessages("myTimeline", user),
 				})
 			} else {
-				// If logged in and user != endpoint
-				c.HTML(http.StatusOK, "timeline.html", gin.H{
-					"title":         username + "'s Timeline",
-					"user_timeline": true,
-					"private":       true, 
-					"user":          username,
-					//"followed":      followed,
-					"user_page":     users_page, 
-					"messages":      GetMessages("individual", user),
-				})
+				// If not following
+				if followed == true {
+					// If logged in and user != endpoint
+					c.HTML(http.StatusOK, "timeline.html", gin.H{
+						"title":         username + "'s Timeline TWO",
+						"user_timeline": true,
+						"private":       true, 
+						"user":          username,
+						//"followed":      followed,
+						"user_page":     users_page, 
+						"messages":      GetMessages("individual", int(userID)),
+					})
+				} else {
+				// If following	
+					// If logged in and user != endpoint
+					c.HTML(http.StatusOK, "timeline.html", gin.H{
+						"title":         username + "'s Timeline TWO",
+						"user_timeline": true,
+						"private":       true, 
+						"user":          username,
+						"followed":      followed,
+						"user_page":     users_page, 
+						"messages":      GetMessages("individual", int(userID)),
+					})
+				}	
 			}
 		} else {
 			// If not logged in
 			c.HTML(http.StatusOK, "timeline.html", gin.H{
-				"title":         username + "'s Timeline",
+				"title":         username + "'s Timeline THREE",
 				"user_timeline": true,
 				"private":       true,
 				"messages":      GetMessages("individual", int(userID)),
@@ -176,10 +201,8 @@ func login_user(c *gin.Context) { //Logs the user in.
 		}
 
 		// redirect to timeline ("/")
-		//user_path := "/" + body.Username
 		location := url.URL{Path: "/"}
 		c.Redirect(http.StatusFound, location.RequestURI())
-		//c.SetCookie("user", body.Username, 3600, "/", "/", false, false)
 		//c.String(200, "You were logged in")
 
 	} else {

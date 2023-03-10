@@ -59,8 +59,6 @@ func ping(c *gin.Context) {
 // ENDPOINT: GET /
 func timeline(c *gin.Context) { 
 	
-	//username, _ := c.Cookie("user")
-
 	// if there is NO session user, show public timeline
 	if user == -1 {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
@@ -77,11 +75,18 @@ func timeline(c *gin.Context) {
 
 // ENDPOINT: GET /public
 func public(c *gin.Context) {
-	// This function seems redundant...
-	c.HTML(http.StatusOK, "timeline.html", gin.H{
-		"messages": GetMessages("public", user),
-	})
-	
+
+	if user == -1 {
+		c.HTML(http.StatusOK, "timeline.html", gin.H{
+			"messages": GetMessages("public", user),
+		})
+	} else {
+		// if there exists a session user, show my timeline
+		c.HTML(http.StatusOK, "timeline.html", gin.H{
+			"messages": GetMessages("public", user),
+			"user": user,
+		})
+	}
 }
 
 // ENDPOINT: POST /add_message
@@ -114,9 +119,7 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	}
 
 	//redirect to timeline ("/")
-	//location := url.URL{Path: "/"}
 	c.Redirect(http.StatusFound, "/")
-	//c.String(200, "Your message was recorded")
 
 }
 
@@ -130,7 +133,7 @@ func SetupRouter() *gin.Engine {
 	router.GET("/", timeline)
 	router.GET("/public", public)
 	router.GET("/:username", username)
-	router.POST("/:username/follow", usernameFollow)
+	router.GET("/:username/follow", usernameFollow)
 	router.DELETE("/:username/unfollow", usernameUnfollow)
 	router.POST("/register", register_user)
 	router.GET("/register", register)
