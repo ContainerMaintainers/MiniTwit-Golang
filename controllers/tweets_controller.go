@@ -36,7 +36,13 @@ func GetMessages(timelineType string, user int) []JoinedMessage {
 			Joins("left join users on users.id = messages.Author_id").
 			Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
 			Scan(&joinedMessages)
-
+	} else if timelineType == "individual"{
+		// Join messages and users for an individual's timeline
+		database.DB.Table("messages").
+			Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
+			Joins("left join users on users.id = messages.Author_id").
+			Where("messages.flagged = ? AND (messages.author_id = ?)", false, user).
+			Scan(&joinedMessages)
 	}
 
 	return joinedMessages
@@ -50,45 +56,102 @@ func ping(c *gin.Context) {
 	})
 }
 
-// ENDPOINT: GET /public
-func public(c *gin.Context) { 
-	
-	//Displays the latest messages of all users
-	c.HTML(http.StatusOK, "timeline.html", gin.H{
-		"messages": GetMessages("public", user),
-	})
-}
-
 // ENDPOINT: GET /
-func timeline(c *gin.Context) {
+func timeline(c *gin.Context) { 
 	
-	// check if there exists a session user, else show my_timeline
-	//username, _ := c.Cookie("user")
+	// if there is NO session user, show public timeline
 	if user == -1 {
-		public(c)
+		c.HTML(http.StatusOK, "timeline.html", gin.H{
+			"messages": GetMessages("public", user),
+		})
 	} else {
-		/*type result struct {
-			Author_id uint
-			Username  string
-			Text	  string
-			Pub_Date  uint
-			}
-			  
-		var results []result
-		
-		// Join messages and users tables
-		database.DB.Table("messages").
-			Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
-			Joins("left join followers on messages.author_id = followers.whom_id").
-			Joins("left join users on users.id = messages.Author_id").
-			Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
-			Scan(&results)*/
-
+		// if there exists a session user, show my timeline
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
 			"messages": GetMessages("myTimeline", user),
 			"user": user,
 		})
 	}
+}
+
+// ENDPOINT: GET /public
+func public(c *gin.Context) {
+
+	if user == -1 {
+		c.HTML(http.StatusOK, "timeline.html", gin.H{
+			"messages": GetMessages("public", user),
+		})
+	} else {
+		// if there exists a session user, show my timeline
+		c.HTML(http.StatusOK, "timeline.html", gin.H{
+			"messages": GetMessages("public", user),
+			"user": user,
+		})
+	}
+}
+
+// ENDPOINT: GET /:username
+func username(c *gin.Context) { // Displays an individual's timeline
+
+	username := c.Param("username") // gets the <username> from the url
+	userID, err := getUserId(username)
+	if err != nil {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
+		c.Status(404)
+		return
+	}
+	// if endpoint is a username
+	if username != "" { 
+		// if logged in
+		if user != -1 {
+			followed := GetFollower(uint(userID), uint(user))
+			var users_page = false
+			// If logged in user == endpoint
+			if user == int(userID) {
+				users_page = true
+
+				c.HTML(http.StatusOK, "timeline.html", gin.H{
+					"title":     "My Timeline ONE",
+					"user":      user,
+					"private":   true,
+					"user_page": true,
+					"messages":  GetMessages("myTimeline", user),
+				})
+			} else {
+				// If following
+				if followed == true {
+					// If logged in and user != endpoint
+					c.HTML(http.StatusOK, "timeline.html", gin.H{
+						"title":         username + "'s Timeline TWO",
+						"user_timeline": true,
+						"private":       true, 
+						"user":          username,
+						"followed":      followed,
+						"user_page":     users_page, 
+						"messages":      GetMessages("individual", int(userID)),
+					})
+				} else {
+				// If not following	
+					// If logged in and user != endpoint
+					c.HTML(http.StatusOK, "timeline.html", gin.H{
+						"title":         username + "'s Timeline THREE",
+						"user_timeline": true,
+						"private":       true, 
+						"user":          username,
+						"user_page":     users_page, 
+						"messages":      GetMessages("individual", int(userID)),
+					})
+				}	
+			}
+		} else {
+			// If not logged in
+			c.HTML(http.StatusOK, "timeline.html", gin.H{
+				"title":         username + "'s Timeline FOUR",
+				"user_timeline": true,
+				"private":       true,
+				"messages":      GetMessages("individual", int(userID)),
+			})
+		}
+	} 
 }
 
 // ENDPOINT: POST /add_message
@@ -107,7 +170,7 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	c.Bind(&body)
 
 	message := entities.Message{
-		Author_id: uint(user), // AUTHOR ID SHOULD GET SESSION USER ID
+		Author_id: uint(user), // GET SESSION USER ID
 		Text:      body.Text,
 		Pub_Date:  uint(time.Now().Unix()),
 		Flagged:   false,
@@ -120,9 +183,7 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 		return
 	}
 
-	//redirect to timeline ("/")
-	//c.Redirect(200, "/") // For some reason, this returns error 500, but I assume it's because the path doesn't exist yet?
-	c.String(200, "Your message was recorded")
+	c.Redirect(http.StatusFound, "/")
 
 }
 
@@ -136,15 +197,14 @@ func SetupRouter() *gin.Engine {
 	router.GET("/", timeline)
 	router.GET("/public", public)
 	router.GET("/:username", username)
-	router.POST("/:username/follow", usernameFollow)
-	router.DELETE("/:username/unfollow", usernameUnfollow)
+	router.GET("/:username/follow", usernameFollow)
+	router.GET("/:username/unfollow", usernameUnfollow)
 	router.POST("/register", register_user)
 	router.GET("/register", register)
 	router.POST("/add_message", addMessage)
 	router.POST("/login", login_user)
 	router.GET("/login", loginf)
 	router.GET("/logout", logout_user)
-	//router.PUT("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
 
 	router.GET("/sim/latest", simLatest)
 	router.POST("/sim/register", simRegister)
