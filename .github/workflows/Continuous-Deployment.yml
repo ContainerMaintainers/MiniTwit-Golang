@@ -3,14 +3,15 @@ name: Minitwit Continuous Deployment
 on:
   push:
     branches:
+      - main
       - enabler/pipeline
   workflow_run:
     workflows:
-      - "Continuous Integration"
+      - "Continuous Deployment"
     types:
       - completed
     branches:
-      - development
+      - main
       - enabler/pipeline
 
 jobs:
