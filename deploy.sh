@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 docker pull $DOCKER_USERNAME/minitwit:latest 
-nohup ./minitwit > out.log &
+docker run --rm -d -p $PORT $DOCKER_USERNAME/minitwit > out.log &

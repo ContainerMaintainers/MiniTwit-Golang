@@ -109,18 +109,22 @@ Vagrant.configure("2") do |config|
       docker run --rm hello-world
       docker rmi hello-world
 
+      echo "Adding environment variables to bash profile"
       echo ". $HOME/.bashrc" >> $HOME/.bash_profile
 
+      echo "Adding DB_IP environment variable to bash profile"
       echo "export DB_IP='$DB_IP'" >> $HOME/.bash_profile
 
       cp -r /vagrant/* $HOME
 
       source $HOME/.bash_profile
 
-      echo "Deploying docker image..."
-      chmod +x /deploy.sh
+      echo "Assigning permission to run deploy.sh"
+      chmod +x deploy.sh
 
+      echo "Deploying docker image..."
       ./deploy.sh
+
       echo "================================================================="
       echo "=                            DONE                               ="
       echo "================================================================="
