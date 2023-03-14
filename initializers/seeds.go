@@ -1,9 +1,8 @@
-package database
+package initializers
 
 import (
+	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"gorm.io/gorm"
-
-	"github.com/ContainerMaintainers/MiniTwit-Golang/entities"
 )
 
 type Seed struct {
@@ -74,7 +73,7 @@ func CreateUser(db *gorm.DB, username string, email string, pwd string) {
 	db.Create(&entities.User{
 		Username: username,
 		Email:    email,
-		Password: entities.Salt_pwd(pwd)})
+		Password: pwd})
 }
 
 func CreateMessage(db *gorm.DB, author uint, text string, date uint, flagged bool) {
