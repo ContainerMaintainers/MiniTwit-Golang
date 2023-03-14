@@ -86,11 +86,6 @@ Vagrant.configure("2") do |config|
 
     server.vm.provision "shell", inline: 'echo "export DOCKER_USERNAME=' + "'" + ENV["DOCKER_USERNAME"] + "'" + '" >> ~/.bash_profile'
     server.vm.provision "shell", inline: 'echo "export DOCKER_PASSWORD=' + "'" + ENV["DOCKER_PASSWORD"] + "'" + '" >> ~/.bash_profile'
-    server.vm.provision "shell", inline: 'echo "export DB_PORT=' + "'" + ENV["DB_PORT"] + "'" + '" >> ~/.bash_profile'
-    server.vm.provision "shell", inline: 'echo "export DB_USER=' + "'" + ENV["DB_USER"] + "'" + '" >> ~/.bash_profile'
-    server.vm.provision "shell", inline: 'echo "export DB_PASSWORD=' + "'" + ENV["DB_PASSWORD"] + "'" + '" >> ~/.bash_profile'
-    server.vm.provision "shell", inline: 'echo "export DB_NAME=' + "'" + ENV["DB_NAME"] + "'" + '" >> ~/.bash_profile'
-    server.vm.provision "shell", inline: 'echo "export PORT=' + "'" + ENV["PORT"] + "'" + '" >> ~/.bash_profile'
 
     server.vm.provision "shell", inline: <<-SHELL
       export DB_IP=`cat /vagrant/db_ip.txt`
