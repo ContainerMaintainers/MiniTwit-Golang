@@ -86,6 +86,13 @@ Vagrant.configure("2") do |config|
 
     server.vm.provision "shell", inline: 'echo "export DOCKER_USERNAME=' + "'" + ENV["DOCKER_USERNAME"] + "'" + '" >> ~/.bash_profile'
     server.vm.provision "shell", inline: 'echo "export DOCKER_PASSWORD=' + "'" + ENV["DOCKER_PASSWORD"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export DB_USER=' + "'" + ENV["DB_USER"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export DB_PASSWORD=' + "'" + ENV["DB_PASSWORD"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export DB_NAME=' + "'" + ENV["DB_NAME"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export DB_PORT=' + "'" + ENV["DB_PORT"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export PORT=' + "'" + ENV["PORT"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export SESSION_KEY=' + "'" + ENV["SESSION_KEY"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export GIN_MODE=' + "'" + ENV["GIN_MODE"] + "'" + '" >> ~/.bash_profile'
 
     server.vm.provision "shell", inline: <<-SHELL
       export DB_IP=`cat /vagrant/db_ip.txt`
@@ -107,18 +114,24 @@ Vagrant.configure("2") do |config|
       echo "Adding environment variables to bash profile"
       echo ". $HOME/.bashrc" >> $HOME/.bash_profile
 
-      echo "Adding DB_IP environment variable to bash profile"
-      echo "export DB_IP='$DB_IP'" >> $HOME/.bash_profile
+      echo "Adding DB_HOST environment variable to bash profile"
+      echo "export DB_HOST='$DB_IP'" >> $HOME/.bash_profile
 
       cp -r /vagrant/* $HOME
 
       source $HOME/.bash_profile
 
+      echo "Building application"
+      docker build -t minitwit --build-arg db_user=$DB_USER --build-arg db_host=$DB_HOST --build-arg db_password=$DB_PASSWORD --build-arg db_name=$DB_NAME --build-arg db_port=$DB_PORT --build-arg port=$PORT --build-arg session_key=$SESSION_KEY --build-arg gin_mode=$GIN_MODE .
+
+      echo "Logging into docker"
+      docker login --username $DOCKER_USERNAME --pasword $DOCKER_PASSWORD
+
       echo "Assigning permission to run deploy.sh"
       chmod +x deploy.sh
 
-      echo "Deploying docker image..."
-      ./deploy.sh
+      echo "Running docker image..."
+      docker run --rm -d -p $PORT minitwit > out.log & 
 
       echo "================================================================="
       echo "=                            DONE                               ="
