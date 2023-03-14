@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	//"fmt"
+	"fmt"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"github.com/gin-gonic/gin"
@@ -17,88 +17,113 @@ var (
 	user   = -1
 )
 
-// ENDPOINT: GET /:username/follow
-func usernameFollow(c *gin.Context) { // Adds the current user as follower of the given user
+// ENDPOINT: POST /:username/follow
+func usernameFollow(c *gin.Context) { //Adds the current user as follower of the given user
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
 		c.AbortWithStatus(401)
 		return
-
-	} else {
-
-		username := c.Param("username")
-		who := uint(user) // SESSION USER ID
-		whom, err := getUserId(username)
-		if err != nil {
-			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-			c.Status(404)
-			return
-		}
-
-		follow := entities.Follower{
-			Who_ID:  who, 
-			Whom_ID: whom,
-		}
-
-		err = database.DB.Create(&follow).Error
-		if err != nil { //when user is already following 'whom'
-			log.Print("Bad request during " + c.Request.RequestURI + ": " + "Already following " + username)
-			c.Status(400)
-			return
-		}
-		//database.DB.Create(&follow)
-		//c.String(200, fmt.Sprintf("You are now following \"%s\"", username))
-		c.Redirect(http.StatusFound, "/"+username)
 	}
+
+	username := c.Param("username")
+
+	who := uint(user) // SHOULD GET SESSION USER ID
+
+	whom, err := getUserId(username)
+	if err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		c.Status(404)
+		return
+	}
+
+	follow := entities.Follower{
+		Who_ID:  who, // !
+		Whom_ID: whom,
+	}
+
+	err = database.DB.Create(&follow).Error
+	if err != nil { //when user is already following 'whom'
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + "Already following " + username)
+		c.Status(400)
+		return
+	}
+
+	// c.JSON(200, gin.H{
+	// 	"follower": follow,
+	// })
+	c.String(200, fmt.Sprintf("You are now following \"%s\"", username))
+
 }
 
-func GetFollower(follower uint, following uint) bool {
-	var follows []entities.Follower
-	if follower == following {
-		return false
-	} else {
-		database.DB.Find(&follows).Where("who_ID = ?", following).Where("whom_ID = ?", follower).First(&follows)
-		return len(follows) > 0
+// ENDPOINT: GET /:username
+func username(c *gin.Context) { //Displays a user's tweets
+
+	username := c.Param("username") //gets the <username> from the url
+
+	userID, err := getUserId(username)
+	if err != nil {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
+		c.Status(404)
+		return
 	}
+
+	var messagesFromUser []entities.Message
+
+	if err := database.DB.Where("author_id = ?", userID).Limit(Per_page).Find(&messagesFromUser).Error; err != nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		c.AbortWithStatus(404)
+		return
+	}
+
+	c.HTML(http.StatusOK, "timeline.html", gin.H{
+		"messagesFromUser": messagesFromUser,
+	})
+
 }
 
-// ENDPOINT: GET /:username/unfollow
-func usernameUnfollow(c *gin.Context) { // Adds the current user as follower of the given user
+// ENDPOINT: DELETE /:username/unfollow
+func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of the given user
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
 		c.AbortWithStatus(401)
 		return
-	} else {
-		username := c.Param("username")
-		who := uint(user) // SESSION USER ID
-		whom, err := getUserId(username)
-		if err != nil {
-			log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
-			c.Status(404)
-			return
-		}
-
-		unfollow := entities.Follower{
-			Who_ID:  who, 
-			Whom_ID: whom,
-		}
-
-		err = database.DB.Where("Who_ID = ? AND Whom_ID = ?", unfollow.Who_ID, unfollow.Whom_ID).Delete(&unfollow).Error
-		if err != nil { // when user is already following 'whom'
-			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-			c.Status(400)
-			return
-		}
-
-		//c.String(200, fmt.Sprintf("You are no longer following \"%s\"", username)) // Had to make it 200 to satisfy tests
-		c.Redirect(http.StatusFound, "/"+username)
 	}
+
+	username := c.Param("username")
+
+	who := uint(user) // SHOULD GET SESSION USER ID
+
+	whom, err := getUserId(username)
+	if err != nil {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
+		c.Status(404)
+		return
+	}
+
+	unfollow := entities.Follower{
+		Who_ID:  who, // !
+		Whom_ID: whom,
+	}
+
+	err = database.DB.Where("Who_ID = ? AND Whom_ID = ?", unfollow.Who_ID, unfollow.Whom_ID).Delete(&unfollow).Error
+	if err != nil { //when user is already following 'whom'
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
+		c.Status(400)
+		return
+	}
+
+	// c.JSON(204, gin.H{
+	// 	"follower": unfollow,
+	// })
+	c.String(200, fmt.Sprintf("You are no longer following \"%s\"", username)) // Had to make it 200 to satisfy tests for some reason
+
 }
 
 // ENDPOINT: POST /login
 func login_user(c *gin.Context) { //Logs the user in.
+	//check if there exists a session user, if yes, redirect to timeline ("/")
 
 	var body struct {
 		Username string `form:"username" json:"username"`
@@ -114,7 +139,7 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 	error := ""
 
-	// if POST req?
+	//if POST req?
 	if _, err := getUserId(body.Username); err != nil {
 		log.Print("Bad request during " + c.Request.RequestURI + ": Invalid username " + body.Username)
 		error = "Invalid username"
@@ -124,33 +149,41 @@ func login_user(c *gin.Context) { //Logs the user in.
 	}
 
 	if error == "" {
-		// give message "You were logged in."
-		
+		//give message "You were logged in."
+		//set session user to body.Username
+
+		// Until session stuff is working, just keep track of the user through a global variable
+		// In this case the id is replaced with the username
 		if userID, err := getUserId(body.Username); err != nil {
 			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 			user = -1
 		} else {
-			// set session user to body.Username
 			user = int(userID)
 		}
 
-		// redirect to timeline ("/")
-		location := url.URL{Path: "/"}
+		//redirect to timeline ("/")
+		//c.Redirect(200, "/")
+		user_path := "/" + body.Username
+		location := url.URL{Path: user_path}
 		c.Redirect(http.StatusFound, location.RequestURI())
+
+		// Temporarily dont redirect
 		//c.String(200, "You were logged in")
 
 	} else {
 		c.String(400, error)
 	}
+
 }
 
-// ENDPOINT: GET /logout
-func logout_user(c *gin.Context) {
+// ENDPOINT: PUT /logout
+func logoutf(c *gin.Context) {
 	//clear session user
 	user = -1
-	
-	//c.String(200, "You were logged out")
-	c.Redirect(http.StatusFound, "/")
+
+	//c.Redirect(200, "/")
+	// Temporarily don't redirect
+	c.String(200, "You were logged out")
 }
 
 // ENDPOINT: GET /register
@@ -166,39 +199,6 @@ func loginf(c *gin.Context) {
 		"messages": "Login page",
 	})
 }
-
-// Registration Helper Function
-func ValidRegistration(c *gin.Context, username string, email string, password1 string, password2 string) bool {
-	
-	//error = ""
-	if password1 == "" || email == "" || username == "" {
-		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Missing Field")
-		c.HTML(http.StatusOK, "register.html", gin.H{
-			"error": "All fields are required",
-		})
-		return false
-	} else if email == "" || !strings.Contains(email, "@") {
-		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Invalid email")
-		c.HTML(http.StatusOK, "register.html", gin.H{
-			"error": "You have to enter a valid email address",
-		})
-		return false
-	} else if password1 != password2 {
-		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Passwords do not match")
-		c.HTML(http.StatusOK, "register.html", gin.H{
-			"error": "The two passwords do not match",
-		})
-		return false
-	} else if _, err := getUserId(username); err == nil {
-		log.Print("Ran into error during " + c.Request.RequestURI + ": " + " Username already taken")
-		c.HTML(http.StatusOK, "register.html", gin.H{
-			"error": "The username is already taken",
-		})
-		return false
-	}
-	return true
-}
-
 
 // ENDPOINT: POST /register
 func register_user(c *gin.Context) {
@@ -219,7 +219,24 @@ func register_user(c *gin.Context) {
 
 	error := ""
 
-	if ValidRegistration(c, body.Username, body.Email, body.Password, body.Password2) {
+	if body.Username == "" {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No username provided")
+		error = "You have to enter a username"
+	} else if body.Email == "" || !strings.Contains(body.Email, "@") {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Invalid email")
+		error = "You have to enter a valid email address"
+	} else if body.Password == "" {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No password provided")
+		error = "You have to enter a password"
+	} else if body.Password != body.Password2 {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Passwords do not match")
+		error = "The two passwords do not match"
+	} else if _, err := getUserId(body.Username); err == nil {
+		log.Print("Ran into error during " + c.Request.RequestURI + ": " + " Username already taken")
+		error = "The username is already taken"
+	}
+
+	if error == "" {
 		user := entities.User{
 			Username: body.Username,
 			Email:    body.Email,
@@ -270,7 +287,7 @@ func checkPasswordHash(username string, enteredPW string) (bool, error) {
 	return true, nil
 }
 
-func getUserId(username string) (uint, error) { // Convenience method to look up the id for a username.
+func getUserId(username string) (uint, error) { //Convenience method to look up the id for a username.
 
 	var user entities.User
 

@@ -1,17 +1,11 @@
 <!doctype html>
-<head>
-  <title>Welcome | MiniTwit</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="../static/favicon_io/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="../static/favicon_io/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="../static/favicon_io/favicon-16x16.png">
-  <link rel="manifest" href="../static/favicon_io/site.webmanifest">
-</head>
+<title>Welcome | MiniTwit</title>
 <link rel=stylesheet type=text/css href="/static/style.css">
 <div class=page>
   <h1>MiniTwit | Sign Up</h1>
   <div class=navigation>
   {{ if .user }}  
-    <a href="/timeline">my timeline</a> |
+    <a href="/">my timeline</a> |
     <a href="/public">public</a> |
     <a href="/logout">sign out</a>
   {{ else }}
@@ -20,9 +14,9 @@
     <a href="/login">sign in</a>
   {{ end }}
   </div>
+  {{range .flashes}}{{.}}{{end}}
   <div class=body>
     <h2>Sign Up</h2>
-    {{ if .error }}<div class=error><strong>Error:</strong> {{ .error }}</div>{{ end }}
     <form action="/register" method=post>
         <dl>
           <dt>Username:
