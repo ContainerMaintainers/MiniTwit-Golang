@@ -1,32 +1,64 @@
 <!doctype html>
-<title>{% block title %}Public Timeline{% endblock %}</title>
+<head>
+  <title>Welcome | MiniTwit</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="../static/favicon_io/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../static/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../static/favicon_io/favicon-16x16.png">
+  <link rel="manifest" href="../static/favicon_io/site.webmanifest">
+</head>
 <link rel=stylesheet type=text/css href="../static/style.css">
 <div class=page>
   <h1>MiniTwit</h1>
   <div class=navigation>
+  {{ if .user }}  
+    <a href="/">my timeline</a> |
+    <a href="/public">public timeline</a> |
+    <a href="/logout">sign out</a>
+    {{ else }}
     <a href="/public">public timeline</a> |
     <a href="/register">sign up</a> |
     <a href="/login">sign in</a>
+  {{ end }}
   </div>
   <div class=body>
-    {{ if .user }}
-    <!-- <h2>What's on your mind?</h2> -->
+    <h2>{{ .title }}</h2>
+    {{ if .private }}
+      {{ if .user_timeline }}
+        {{ if .user }}  
+          <div class=followstatus>
+            {{ if .user_page}}
+              This is you!
+            {{ else if .followed }}
+              You are currently following this user.
+              <a class=unfollow href="/{{ .user }}/unfollow">Unfollow user</a>.
+            {{ else }}
+              You are not following this user.
+              <a class=follow href="/{{ .user }}/follow">follow user</a>.
+            {{ end }}
+          </div>
+        {{ end }}
+      {{ else }}
       <div class=twitbox>
-        <h3>What's on your mind {{ .user.username }}?</h3>
+        <h3>What's on your mind {{ .username }}?</h3>
         <form action="/add_message" method=post>
         <dl>
           <dd><input type=text name=text size=60></dd>
           <dd><input type=submit value="Share"></dd>
         </form>
       </div>
+      {{ end }}
     {{ end }}
     <h2>Twits</h2>
     <ul class=messages>
-        {{ range .messages }}
-            <li>{{ .Text }} - {{ .Author_id }}</li>
-        {{ end }}
+    {{ range .messages }}
+      <li><img src="http://www.gravatar.com/avatar/{{ .Author_id }}?d=identicon&amp;s=48"><p>
+        <strong><a href="/{{ .Username }}">{{ .Username }}</a></strong>
+        {{ .Text }}
+        <small>&mdash; {{ .Pub_Date }}</small>
+    {{ else }}
+      <li><em>There's no message so far.</em>
+    {{ end }}
     </ul>
-  </div>
   <div class=footer>
     MiniTwit &mdash; A Gin Web Application
   </div>
