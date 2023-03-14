@@ -3,6 +3,24 @@
 FROM alpine:edge AS build
 RUN apk add --no-cache --update go gcc g++
 
+ARG docker_user
+ARG docker_host
+ARG docker_password
+ARG docker_name
+ARG docker_port
+ARG port
+ARG session_key
+ARG gin_mode
+
+ENV DOCKER_USER=${docker_user}
+ENV DOCKER_PASSWORD=${docker_password}
+ENV DOCKER_NAME=${docker_name}
+ENV DOCKER_PORT=${docker_port}
+ENV DOCKER_HOST=${docker_host}
+ENV PORT=${port}
+ENV SESSION_KEY=${session_key}
+ENV gin_mode=${gin_mode}
+
 # Create a directory inside the container to store all our application 
 # and then make it the working directory.
 WORKDIR /usr/src/app
