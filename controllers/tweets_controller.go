@@ -1,12 +1,13 @@
 package controllers
 
 import (
-	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
+	"github.com/gin-gonic/gin"
 )
 
 const Per_page int = 30
@@ -14,39 +15,48 @@ const Per_page int = 30
 type JoinedMessage struct {
 	Author_id uint
 	Username  string
-	Text	  string
+	Text      string
 	Pub_Date  uint
-	}
+}
 
-func GetMessages(timelineType string, user int) []JoinedMessage {
-	
+func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
+
 	var joinedMessages []JoinedMessage
-	
+
 	if timelineType == "public" {
 		// Join messages and users tables for public timeline
 		database.DB.Table("messages").
-		Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
-		Joins("left join users on users.id = messages.Author_id").Scan(&joinedMessages)
+			Select("messages.Author_id", "users.Username", "messages.Text", "messages.Pub_Date").
+			Joins("left join users on users.id = messages.Author_id").
+			Offset(pagenum * Per_page).
+			Limit(Per_page).
+			Scan(&joinedMessages)
 
 	} else if timelineType == "myTimeline" {
 		// Join messages, users, and followers for my timeline
 		database.DB.Table("messages").
-			Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
+			Select("messages.Author_id", "users.Username", "messages.Text", "messages.Pub_Date").
 			Joins("left join followers on messages.author_id = followers.whom_id").
 			Joins("left join users on users.id = messages.Author_id").
 			Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
+			Offset(pagenum * Per_page).
+			Limit(Per_page).
 			Scan(&joinedMessages)
-	} else if timelineType == "individual"{
+
+	} else if timelineType == "individual" {
 		// Join messages and users for an individual's timeline
 		database.DB.Table("messages").
-			Select("messages.Author_id", "users.Username" ,"messages.Text", "messages.Pub_Date").
+			Select("messages.Author_id", "users.Username", "messages.Text", "messages.Pub_Date").
 			Joins("left join users on users.id = messages.Author_id").
 			Where("messages.flagged = ? AND (messages.author_id = ?)", false, user).
+			Offset(pagenum * Per_page).
+			Limit(Per_page).
 			Scan(&joinedMessages)
+
 	}
 
 	return joinedMessages
-	
+
 }
 
 // ENDPOINT: GET /ping
@@ -57,18 +67,18 @@ func ping(c *gin.Context) {
 }
 
 // ENDPOINT: GET /
-func timeline(c *gin.Context) { 
-	
+func timeline(c *gin.Context) {
+
 	// if there is NO session user, show public timeline
 	if user == -1 {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("public", user),
+			"messages": GetMessages("public", user, 0),
 		})
 	} else {
 		// if there exists a session user, show my timeline
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("myTimeline", user),
-			"user": user,
+			"messages": GetMessages("myTimeline", user, 0),
+			"user":     user,
 		})
 	}
 }
@@ -78,13 +88,13 @@ func public(c *gin.Context) {
 
 	if user == -1 {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("public", user),
+			"messages": GetMessages("public", user, 0),
 		})
 	} else {
 		// if there exists a session user, show my timeline
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("public", user),
-			"user": user,
+			"messages": GetMessages("public", user, 0),
+			"user":     user,
 		})
 	}
 }
@@ -100,7 +110,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 		return
 	}
 	// if endpoint is a username
-	if username != "" { 
+	if username != "" {
 		// if logged in
 		if user != -1 {
 			followed := GetFollower(uint(userID), uint(user))
@@ -114,7 +124,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 					"user":      user,
 					"private":   true,
 					"user_page": true,
-					"messages":  GetMessages("myTimeline", user),
+					"messages":  GetMessages("myTimeline", user, 0),
 				})
 			} else {
 				// If following
@@ -123,24 +133,24 @@ func username(c *gin.Context) { // Displays an individual's timeline
 					c.HTML(http.StatusOK, "timeline.html", gin.H{
 						"title":         username + "'s Timeline TWO",
 						"user_timeline": true,
-						"private":       true, 
+						"private":       true,
 						"user":          username,
 						"followed":      followed,
-						"user_page":     users_page, 
-						"messages":      GetMessages("individual", int(userID)),
+						"user_page":     users_page,
+						"messages":      GetMessages("individual", int(userID), 0),
 					})
 				} else {
-				// If not following	
+					// If not following
 					// If logged in and user != endpoint
 					c.HTML(http.StatusOK, "timeline.html", gin.H{
 						"title":         username + "'s Timeline THREE",
 						"user_timeline": true,
-						"private":       true, 
+						"private":       true,
 						"user":          username,
-						"user_page":     users_page, 
-						"messages":      GetMessages("individual", int(userID)),
+						"user_page":     users_page,
+						"messages":      GetMessages("individual", int(userID), 0),
 					})
-				}	
+				}
 			}
 		} else {
 			// If not logged in
@@ -148,10 +158,10 @@ func username(c *gin.Context) { // Displays an individual's timeline
 				"title":         username + "'s Timeline FOUR",
 				"user_timeline": true,
 				"private":       true,
-				"messages":      GetMessages("individual", int(userID)),
+				"messages":      GetMessages("individual", int(userID), 0),
 			})
 		}
-	} 
+	}
 }
 
 // ENDPOINT: POST /add_message
