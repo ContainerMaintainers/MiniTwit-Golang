@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
-docker pull $DOCKER_USERNAME/minitwit:latest
+echo "Pulling latest version"
+docker pull $1/minitwit:latest
+echo "Stopping current minitwit"
 docker stop minitwit
-docker run --rm -d -p $PORT:$PORT --name minitwit $DOCKER_USERNAME/minitwit:latest
+echo "Deploying $DOCKER_USERNAME/minitwit:latest to $PORT"
+docker run --rm -d -p $2:$2 $1/minitwit:latest
