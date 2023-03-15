@@ -51,7 +51,7 @@ jobs:
             gin_mode=${{  env.GIN_MODE  }}
 
       - name: Deploy to server
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v0.1.8
         with:
             host: ${{  secrets.SSH_HOST }}
             username: ${{  secrets.SSH_USER }}
