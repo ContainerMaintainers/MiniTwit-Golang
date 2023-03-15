@@ -47,8 +47,8 @@ jobs:
             db_user=${{  secrets.DB_USER  }}
             db_host=${{  secrets.DB_HOST  }}
             session_key=${{  secrets.SESSION_KEY  }}
-            port=${{  env.PORT  }}
-            gin_mode=${{  env.GIN_MODE  }}
+            port=${{  vars.PORT  }}
+            gin_mode=${{  vars.GIN_MODE  }}
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.8
