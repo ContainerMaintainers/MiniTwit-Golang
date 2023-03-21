@@ -26,7 +26,7 @@ services:
 
   web:
     image: minitwit-webapp
-    container_name: minitwit-web
+    container_name: minitwit
     depends_on:
       postgres:
         condition: service_healthy

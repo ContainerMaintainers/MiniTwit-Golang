@@ -5,11 +5,6 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/controllers"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
-
-	"net/http"
-	// "github.com/prometheus/client_golang/prometheus"
-    // "github.com/prometheus/client_golang/prometheus/promauto"
-    "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -23,8 +18,6 @@ func init() {
 }
 
 func main() {
-
-	http.Handle("/metrics", promhttp.Handler())
 
 	flag.Parse()
 
