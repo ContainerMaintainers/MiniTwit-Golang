@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/sh
 
 ENV_FILE=/.env
 if [ -f "$ENV_FILE" ]; then
