@@ -96,7 +96,6 @@ Vagrant.configure("2") do |config|
 
     server.vm.provision "shell", inline: <<-SHELL
       export DB_IP=`cat /vagrant/db_ip.txt`
-      export DB_IP='64.226.70.150'
       echo $DB_IP
 
       echo "Installing docker..."
