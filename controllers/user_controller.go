@@ -156,7 +156,7 @@ func login_user(c *gin.Context) { //Logs the user in.
 		}
 
 		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("UserAuthorization", tokenString, 3600*24*30, "", "", false, true) //set false to true when not on local host, 3600*24*30
+		c.SetCookie("UserAuthorization", tokenString, 3600*24*30, "", "", false, true) //set false to true when not on local host,
 
 		user_path := "/" + body.Username
 		location := url.URL{Path: user_path}
