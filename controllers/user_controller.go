@@ -43,10 +43,6 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 		Whom_ID: whom,
 	}
 
-	// if err := database.DB.Where("Who_ID = ? AND Whom_ID = ?", who.ID, whom).Find(&follow).Error; err == nil {
-	// 	c.String(403, fmt.Sprintf("You are already following \"%s\"", username))
-	// }
-	//check if there can be duplicates,. maybe put keys in follower table
 	if err := database.DB.Create(&follow).Error; err != nil {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + "Already following " + username)
 		c.Status(400)
@@ -160,7 +156,7 @@ func login_user(c *gin.Context) { //Logs the user in.
 		}
 
 		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("Authorization", tokenString, 60, "", "", false, true) //set false to true when not on local host, 3600*24*30
+		c.SetCookie("UserAuthorization", tokenString, 60, "", "", false, true) //set false to true when not on local host, 3600*24*30
 
 		user_path := "/" + body.Username
 		location := url.URL{Path: user_path}
@@ -183,7 +179,7 @@ func validate(c *gin.Context) {
 // ENDPOINT: PUT /logout
 func logoutf(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode) //don't know what this line does
-	c.SetCookie("Authorization", "", 0, "", "", false, true)
+	c.SetCookie("UserAuthorization", "", 0, "", "", false, true)
 
 	//c.Redirect(200, "/")
 	// Temporarily don't redirect
