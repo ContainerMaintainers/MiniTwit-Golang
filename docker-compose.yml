@@ -1,6 +1,10 @@
 version: "3.8"
-services:
 
+networks:
+  main:
+    name: minitwit-network
+
+services:
   postgres:
     container_name: minitwit-postgres
     image: postgres
@@ -23,6 +27,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      grafana:
+        condition: service_started
+      prometheus:
+        condition: service_started
     build: 
       context: .
       dockerfile: Dockerfile
@@ -31,6 +39,8 @@ services:
     restart: always
     links:
       - postgres:database
+    networks:
+      - main
 
   prometheus:
     image: prom/prometheus
