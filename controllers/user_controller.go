@@ -2,33 +2,34 @@ package controllers
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"net/url"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"log"
-	"net/http"
-	"net/url"
-	"strings"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
 	latest = 0
-	user   = -1
+	//user   = -1
 )
 
 // ENDPOINT: POST /:username/follow
 func usernameFollow(c *gin.Context) { //Adds the current user as follower of the given user
 
-	if user == -1 {
-		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
-		c.AbortWithStatus(401)
-		return
-	}
+	user, _ := c.Get("user")
+
+	who := user.(entities.User) // SHOULD GET SESSION USER ID
 
 	username := c.Param("username")
-
-	who := uint(user) // SHOULD GET SESSION USER ID
 
 	whom, err := getUserId(username)
 	if err != nil {
@@ -38,20 +39,20 @@ func usernameFollow(c *gin.Context) { //Adds the current user as follower of the
 	}
 
 	follow := entities.Follower{
-		Who_ID:  who, // !
+		Who_ID:  who.ID,
 		Whom_ID: whom,
 	}
 
-	err = database.DB.Create(&follow).Error
-	if err != nil { //when user is already following 'whom'
+	// if err := database.DB.Where("Who_ID = ? AND Whom_ID = ?", who.ID, whom).Find(&follow).Error; err == nil {
+	// 	c.String(403, fmt.Sprintf("You are already following \"%s\"", username))
+	// }
+	//check if there can be duplicates,. maybe put keys in follower table
+	if err := database.DB.Create(&follow).Error; err != nil {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + "Already following " + username)
 		c.Status(400)
 		return
 	}
 
-	// c.JSON(200, gin.H{
-	// 	"follower": follow,
-	// })
 	c.String(200, fmt.Sprintf("You are now following \"%s\"", username))
 
 }
@@ -85,15 +86,11 @@ func username(c *gin.Context) { //Displays a user's tweets
 // ENDPOINT: DELETE /:username/unfollow
 func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of the given user
 
-	if user == -1 {
-		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
-		c.AbortWithStatus(401)
-		return
-	}
+	user, _ := c.Get("user")
+
+	who := user.(entities.User) // SHOULD GET SESSION USER ID
 
 	username := c.Param("username")
-
-	who := uint(user) // SHOULD GET SESSION USER ID
 
 	whom, err := getUserId(username)
 	if err != nil {
@@ -103,22 +100,18 @@ func usernameUnfollow(c *gin.Context) { //Adds the current user as follower of t
 	}
 
 	unfollow := entities.Follower{
-		Who_ID:  who, // !
+		Who_ID:  who.ID,
 		Whom_ID: whom,
 	}
 
 	err = database.DB.Where("Who_ID = ? AND Whom_ID = ?", unfollow.Who_ID, unfollow.Whom_ID).Delete(&unfollow).Error
-	if err != nil { //when user is already following 'whom'
+	if err != nil { // what happens when trying to unfollow someone you're not currently following? idk, can't find minitwit py repo (:
 		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 		c.Status(400)
 		return
 	}
 
-	// c.JSON(204, gin.H{
-	// 	"follower": unfollow,
-	// })
 	c.String(200, fmt.Sprintf("You are no longer following \"%s\"", username)) // Had to make it 200 to satisfy tests for some reason
-
 }
 
 // ENDPOINT: POST /login
@@ -149,26 +142,29 @@ func login_user(c *gin.Context) { //Logs the user in.
 	}
 
 	if error == "" {
-		//give message "You were logged in."
 		//set session user to body.Username
+		userId, _ := getUserId(body.Username) // we can '_' the error, since we check for that error earlier
 
-		// Until session stuff is working, just keep track of the user through a global variable
-		// In this case the id is replaced with the username
-		if userID, err := getUserId(body.Username); err != nil {
-			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
-			user = -1
-		} else {
-			user = int(userID)
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"sub": userId,
+			"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
+		})
+
+		tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_FOR_JWT_TOKEN")))
+
+		if err != nil {
+			c.JSON(401, gin.H{
+				"error": "Failed creation of token",
+			})
+			return
 		}
 
-		//redirect to timeline ("/")
-		//c.Redirect(200, "/")
+		c.SetSameSite(http.SameSiteLaxMode)
+		c.SetCookie("Authorization", tokenString, 60, "", "", false, true) //set false to true when not on local host, 3600*24*30
+
 		user_path := "/" + body.Username
 		location := url.URL{Path: user_path}
 		c.Redirect(http.StatusFound, location.RequestURI())
-
-		// Temporarily dont redirect
-		//c.String(200, "You were logged in")
 
 	} else {
 		c.String(400, error)
@@ -176,10 +172,18 @@ func login_user(c *gin.Context) { //Logs the user in.
 
 }
 
+func validate(c *gin.Context) {
+	user, _ := c.Get("user")
+
+	c.JSON(200, gin.H{
+		"message": user,
+	})
+}
+
 // ENDPOINT: PUT /logout
 func logoutf(c *gin.Context) {
-	//clear session user
-	user = -1
+	c.SetSameSite(http.SameSiteLaxMode) //don't know what this line does
+	c.SetCookie("Authorization", "", 0, "", "", false, true)
 
 	//c.Redirect(200, "/")
 	// Temporarily don't redirect

@@ -1,12 +1,14 @@
 package controllers
 
 import (
-	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 const Per_page int = 30
@@ -36,12 +38,13 @@ func public(c *gin.Context) { //Displays the latest messages of all users
 
 // ENDPOINT: GET /
 func timeline(c *gin.Context) {
-	
+
 	// check if there exists a session user, if not, return all messages
 	// For now just reuse the same endpoint handler as /public
-	if user == -1 {
-		public(c)
-		return
+	user, exists := c.Get("user")
+
+	if !exists {
+		c.AbortWithStatus(403)
 	}
 
 	var messages []entities.Message
@@ -62,11 +65,13 @@ func timeline(c *gin.Context) {
 // ENDPOINT: POST /add_message
 func addMessage(c *gin.Context) { //Registers a new message for the user.
 
-	if user == -1 {
-		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
-		c.AbortWithStatus(401)
-		return
-	}
+	user, _ := c.Get("user")
+
+	usr := user.(entities.User)
+
+	// log.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+	// log.Println(usr)
+	// log.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 
 	var body struct {
 		Text string `form:"text" json:"text"`
@@ -75,7 +80,7 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	c.Bind(&body)
 
 	message := entities.Message{
-		Author_id: uint(user), // AUTHOR ID SHOULD GET SESSION USER ID
+		Author_id: uint(usr.ID), // AUTHOR ID SHOULD GET SESSION USER ID
 		Text:      body.Text,
 		Pub_Date:  uint(time.Now().Unix()),
 		Flagged:   false,
@@ -88,9 +93,6 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 		return
 	}
 
-	//redirect to timeline ("/")
-	//c.Redirect(200, "/") // For some reason, this returns error 500, but I assume it's because the path doesn't exist yet?
-	// Temporarily dont redirect
 	c.String(200, "Your message was recorded")
 
 }
@@ -105,14 +107,15 @@ func SetupRouter() *gin.Engine {
 	router.GET("/", timeline)
 	router.GET("/public", public)
 	router.GET("/:username", username)
-	router.POST("/:username/follow", usernameFollow)
-	router.DELETE("/:username/unfollow", usernameUnfollow)
+	router.POST("/:username/follow", middleware.RequireAuth, usernameFollow)
+	router.DELETE("/:username/unfollow", middleware.RequireAuth, usernameUnfollow)
 	router.POST("/register", register_user)
 	router.GET("/register", register)
-	router.POST("/add_message", addMessage)
+	router.POST("/add_message", middleware.RequireAuth, addMessage)
 	router.POST("/login", login_user)
 	router.GET("/login", loginf)
 	router.PUT("/logout", logoutf) // Changed temporarily to satisfy tests, should it be put or get?
+	router.GET("/validate", middleware.RequireAuth, validate)
 
 	router.GET("/sim/latest", simLatest)
 	router.POST("/sim/register", simRegister)
