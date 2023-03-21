@@ -97,6 +97,35 @@ func usernameUnfollow(c *gin.Context) { // Adds the current user as follower of 
 	}
 }
 
+// login helper function
+func valid_login(c *gin.Context, message string, user int) bool {
+	if message == "Invalid username" {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Invalid Username")
+		c.HTML(http.StatusOK, "login.html", gin.H{
+			"error": "Invalid Username",
+		})
+		return false
+	} else if message == "Invalid password"  {
+		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Invalid password")
+		c.HTML(http.StatusOK, "login.html", gin.H{
+			"error": "Invalid password",
+		})
+		return false
+	} else if message == "You were logged in" {
+		c.HTML(http.StatusOK, "timeline.html", gin.H{
+			"title":     "My Timeline ONE",
+			"flashes":	 message,
+			"user":      user,
+			"private":   true,
+			"user_page": true,
+			"messages":  GetMessages("myTimeline", user, 0),
+		})
+		return true
+	}
+	return true
+	
+}
+
 // ENDPOINT: POST /login
 func login_user(c *gin.Context) { //Logs the user in.
 
@@ -112,36 +141,24 @@ func login_user(c *gin.Context) { //Logs the user in.
 		return
 	}
 
-	error := ""
-
-	// if POST req?
 	if _, err := getUserId(body.Username); err != nil {
+		// If invalid username
 		log.Print("Bad request during " + c.Request.RequestURI + ": Invalid username " + body.Username)
-		error = "Invalid username"
+		valid_login(c, "Invalid username", -1)
 	} else if _, err := checkPasswordHash(body.Username, body.Password); err != nil {
+		// if invalid password
 		log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error() + ", invalid password")
-		error = "Invalid password"
-	}
-
-	if error == "" {
-		// give message "You were logged in."
-		
+		valid_login(c, "Invalid password", -1)
+	} else {
 		if userID, err := getUserId(body.Username); err != nil {
 			log.Print("Ran into error during " + c.Request.RequestURI + ": " + err.Error())
 			user = -1
 		} else {
-			// set session user to body.Username
+			// set session user
 			user = int(userID)
+			valid_login(c, "You were logged in", user)
 		}
-
-		// redirect to timeline ("/")
-		location := url.URL{Path: "/"}
-		c.Redirect(http.StatusFound, location.RequestURI())
-		//c.String(200, "You were logged in")
-
-	} else {
-		c.String(400, error)
-	}
+	}	
 }
 
 // ENDPOINT: GET /logout
@@ -198,7 +215,6 @@ func ValidRegistration(c *gin.Context, username string, email string, password1 
 	}
 	return true
 }
-
 
 // ENDPOINT: POST /register
 func register_user(c *gin.Context) {
