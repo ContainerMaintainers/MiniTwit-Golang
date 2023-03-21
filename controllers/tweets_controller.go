@@ -43,37 +43,6 @@ func timeline(c *gin.Context) {
 	// For now just reuse the same endpoint handler as /public
 
 	user, _ := c.Get("user")
-	// if !exists {
-	// 	log.Println("i dont exist")
-	// }
-	// log.Println("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
-	// log.Println(user)
-	// if user == nil {
-	// 	c.Redirect(301, "/public")
-	// }
-
-	// usr := user.(entities.User)
-	// log.Println("cccccccccccccccccccccccccccccccccccccccccccccccc")
-
-	// tokenString, err := c.Cookie("UserAuthorization")
-	// claims := jwt.MapClaims{}
-	// token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-	// 	return []byte("SECRET_FOR_JWT_TOKEN"), nil
-	// })
-	// if err != nil {
-	// 	log.Println("aaaaaaaaaaaaa")
-	// 	log.Println(claims["sub"])
-	// 	c.AbortWithStatus(403)
-	// 	return
-	// }
-	// log.Println("bbbbbbbbbbbbbb")
-	// if !token.Valid {
-	// 	c.Redirect(301, "/public")
-	// }
-	// if usr.ID == 0 { // when it fetched no user
-	// 	log.Println("dddddddddddddddddddddddddddddddddddddddddddd")
-	// 	c.Redirect(301, "/public")
-	// }
 
 	var messages []entities.Message
 
@@ -96,10 +65,6 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	user, _ := c.Get("user")
 
 	usr := user.(entities.User)
-
-	// log.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-	// log.Println(usr)
-	// log.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 
 	var body struct {
 		Text string `form:"text" json:"text"`
