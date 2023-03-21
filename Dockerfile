@@ -19,10 +19,10 @@ WORKDIR /usr/src/app
 # Copy everything
 COPY . .
 
+RUN sed -i 's/\r$//' env_file.sh
+
 # Give permissions to run env_file.sh
 RUN chmod +x env_file.sh
-
-RUN ls -a
 
 # Create .env if it doesn't exist
 RUN sh env_file.sh ${db_user} ${db_password} ${db_name} ${db_port} ${db_host} ${port} ${session_key} ${gin_mode}
