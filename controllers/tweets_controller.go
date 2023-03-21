@@ -41,11 +41,39 @@ func timeline(c *gin.Context) {
 
 	// check if there exists a session user, if not, return all messages
 	// For now just reuse the same endpoint handler as /public
-	user, exists := c.Get("user")
 
-	if !exists {
-		c.AbortWithStatus(403)
-	}
+	user, _ := c.Get("user")
+	// if !exists {
+	// 	log.Println("i dont exist")
+	// }
+	// log.Println("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+	// log.Println(user)
+	// if user == nil {
+	// 	c.Redirect(301, "/public")
+	// }
+
+	// usr := user.(entities.User)
+	// log.Println("cccccccccccccccccccccccccccccccccccccccccccccccc")
+
+	// tokenString, err := c.Cookie("UserAuthorization")
+	// claims := jwt.MapClaims{}
+	// token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+	// 	return []byte("SECRET_FOR_JWT_TOKEN"), nil
+	// })
+	// if err != nil {
+	// 	log.Println("aaaaaaaaaaaaa")
+	// 	log.Println(claims["sub"])
+	// 	c.AbortWithStatus(403)
+	// 	return
+	// }
+	// log.Println("bbbbbbbbbbbbbb")
+	// if !token.Valid {
+	// 	c.Redirect(301, "/public")
+	// }
+	// if usr.ID == 0 { // when it fetched no user
+	// 	log.Println("dddddddddddddddddddddddddddddddddddddddddddd")
+	// 	c.Redirect(301, "/public")
+	// }
 
 	var messages []entities.Message
 
@@ -104,7 +132,7 @@ func SetupRouter() *gin.Engine {
 	router.Static("/static", "./static/")
 
 	router.GET("/ping", ping)
-	router.GET("/", timeline)
+	router.GET("/", middleware.RequireAuth, timeline)
 	router.GET("/public", public)
 	router.GET("/:username", username)
 	router.POST("/:username/follow", middleware.RequireAuth, usernameFollow)

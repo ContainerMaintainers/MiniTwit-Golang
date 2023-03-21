@@ -14,10 +14,14 @@ import (
 
 func RequireAuth(c *gin.Context) {
 
-	tokenString, err := c.Cookie("Authorization")
+	tokenString, err := c.Cookie("UserAuthorization")
 
 	if err != nil {
-		c.AbortWithStatus(403)
+		if c.FullPath() == "http://localhost:8080/" {
+			c.Redirect(301, "/public")
+		} else {
+			c.AbortWithStatus(403)
+		}
 	}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
