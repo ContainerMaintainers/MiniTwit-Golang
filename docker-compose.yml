@@ -23,7 +23,6 @@ services:
     networks:
       - main
 
-
   web:
     image: minitwit-webapp
     container_name: minitwit
@@ -37,6 +36,16 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      args:
+        db_user: ${DB_USER}
+        db_password: ${DB_PASSWORD}
+        db_host: ${DB_HOST}
+        db_name: ${DB_NAME}
+        db_port: ${DB_PORT}
+        port: ${PORT}
+        session_key: ${SESSION_KEY}
+        gin_mode: ${GIN_MODE}
+        BUILDKIT_PROGRESS: plain docker-compose build
     ports:
       - '8080:8080'
     restart: always

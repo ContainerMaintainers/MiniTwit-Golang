@@ -84,42 +84,56 @@ Vagrant.configure("2") do |config|
       end
     end
 
+    server.vm.provision "shell", inline: 'echo "export DOCKER_USERNAME=' + "'" + ENV["DOCKER_USERNAME"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export DOCKER_PASSWORD=' + "'" + ENV["DOCKER_PASSWORD"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export DB_USER=' + "'" + ENV["DB_USER"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export DB_PASSWORD=' + "'" + ENV["DB_PASSWORD"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export DB_NAME=' + "'" + ENV["DB_NAME"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export DB_PORT=' + "'" + ENV["DB_PORT"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export PORT=' + "'" + ENV["PORT"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export SESSION_KEY=' + "'" + ENV["SESSION_KEY"] + "'" + '" >> ~/.bash_profile'
+    server.vm.provision "shell", inline: 'echo "export GIN_MODE=' + "'" + ENV["GIN_MODE"] + "'" + '" >> ~/.bash_profile'
+
     server.vm.provision "shell", inline: <<-SHELL
       export DB_IP=`cat /vagrant/db_ip.txt`
       echo $DB_IP
 
-      echo "Installing go..."
-      sudo snap install go --classic
+      echo "Installing docker..."
+      sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+      apt-cache policy docker-ce
+      sudo apt install -y docker-ce
+      sudo systemctl status docker
+      sudo usermod -aG docker ${USER}
 
-      echo "Verifying go installation"
-      go version
+      echo "Verifying that docker works"
+      docker run --rm hello-world
+      docker rmi hello-world
 
-      echo "Installing gcc..."
-      sudo apt update
-      sudo apt -y install build-essential
+      echo "Adding environment variables to bash profile"
+      echo ". $HOME/.bashrc" >> $HOME/.bash_profile
 
-      echo "Verifying gcc installation"
-      gcc --version
-
-      echo $DB_IP
+      echo "Adding DB_HOST environment variable to bash profile"
+      echo "export DB_HOST='$DB_IP'" >> $HOME/.bash_profile
 
       cp -r /vagrant/* $HOME
 
-      touch .env
-      echo "DB_HOST=$DB_IP" >> .env
-      echo "DB_PORT=5432" >> .env
-      echo "DB_USER=admin" >> .env
-      echo "DB_PASSWORD=admin" >> .env
-      echo "DB_NAME=minitwitdb" >> .env
-      echo "PORT=8080" >> .env
+      source $HOME/.bash_profile
 
-      echo "Installing go modules"
-      go mod download
+      echo "Assigning permission to run deploy.sh and env_file.sh"
+      chmod +x deploy.sh
+      chmod +x env_file.sh
 
-      echo "Building Minitwit"
-      go build -o minitwit minitwit.go
+      echo "Building application"
+      docker build -t $DOCKER_USERNAME/minitwit:latest --build-arg db_user=$DB_USER --build-arg db_host=$DB_HOST --build-arg db_password=$DB_PASSWORD --build-arg db_name=$DB_NAME --build-arg db_port=$DB_PORT --build-arg port=$PORT --build-arg session_key=$SESSION_KEY --build-arg gin_mode=$GIN_MODE .
 
-      nohup ./minitwit > out.log &
+      echo "Logging into docker"
+      docker login --username $DOCKER_USERNAME --pasword $DOCKER_PASSWORD
+
+      echo "Running docker image..."
+      docker run --rm -d -p $PORT:$PORT --name minitwit $DOCKER_USERNAME/minitwit:latest
+
       echo "================================================================="
       echo "=                            DONE                               ="
       echo "================================================================="
