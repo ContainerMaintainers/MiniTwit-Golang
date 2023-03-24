@@ -27,3 +27,8 @@ Python has to be installed, as well as pytest (`pip install pytest`)
 The tests are then run with `python -m pytest minitwit_sim_api_test.py`
 
 To run the simulator: `python minitwit_simulator.py http://localhost:8080/sim`
+
+## Monitoring with Grafana and Prometheus
+Prometheus can be accessed at [http://localhost:9090](http://localhost:9090)  
+Grafana can be accessed at [http://localhost:3000](http://localhost:3000)  
+Metrics end point at [http://localhost:8080/metrics](http://localhost:8080/metrics)

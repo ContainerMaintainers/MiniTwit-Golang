@@ -1,6 +1,10 @@
 version: "3.8"
-services:
 
+networks:
+  main:
+    name: minitwit-network
+
+services:
   postgres:
     container_name: minitwit-postgres
     image: postgres
@@ -16,13 +20,19 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - main
 
   web:
     image: minitwit-webapp
-    container_name: minitwit-web
+    container_name: minitwit
     depends_on:
       postgres:
         condition: service_healthy
+      grafana:
+        condition: service_started
+      prometheus:
+        condition: service_started
     build: 
       context: .
       dockerfile: Dockerfile
@@ -41,3 +51,23 @@ services:
     restart: always
     links:
       - postgres:database
+    networks:
+      - main
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - main
+
+
+  grafana:
+    image: grafana/grafana:4.5.2
+    ports:
+      - "3000:3000"  
+    networks:
+      - main

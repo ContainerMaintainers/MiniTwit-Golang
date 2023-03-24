@@ -8,6 +8,8 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"github.com/gin-gonic/gin"
+
+    "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const Per_page int = 30
@@ -197,12 +199,21 @@ func addMessage(c *gin.Context) { // Registers a new message for the user.
 
 }
 
+func metricsHandler() gin.HandlerFunc {
+	h := promhttp.Handler()
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
 func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/static", "./static/")
 
+	router.GET("/metrics", metricsHandler())
 	router.GET("/ping", ping)
 	router.GET("/", timeline)
 	router.GET("/public", public)
