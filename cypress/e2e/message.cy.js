@@ -2,8 +2,6 @@ import { uid } from 'uid';
 
 describe('Create message', () => {
     
-
-
     it('Check if create message box exists', () => {
         const username = uid()
 
