@@ -64,3 +64,18 @@ describe('Redirection', () => {
         cy.url().should('contain', '/login')
     })
 })
+
+describe('User exists', () => {
+    it('Checks that registered user exists', () => {
+        const username = uid()
+
+        cy.visit('localhost:8080/register')
+        cy.get('input[name="username"]').type(username)
+        cy.get('input[name="email"]').type('example@mail.com')
+        cy.get('input[name="password"]').type('password')
+        cy.get('input[name="password2"]').type('password')
+        cy.get('input').contains('Sign Up').click()
+
+        cy.visit('localhost:8080/' + username)
+    })
+})
