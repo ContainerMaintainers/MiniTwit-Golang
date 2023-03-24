@@ -18,5 +18,8 @@
   "homepage": "https://github.com/ContainerMaintainers/MiniTwit-Golang#readme",
   "devDependencies": {
     "cypress": "^12.8.1"
+  },
+  "dependencies": {
+    "uid": "^2.0.1"
   }
 }
