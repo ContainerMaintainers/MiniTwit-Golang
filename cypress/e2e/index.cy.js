@@ -37,9 +37,13 @@ describe('Navigation buttons', () => {
         cy.get('.messages > li').its('length').should('be.greaterThan', 2)
     })
 
-    it('Checks for the existance of "my timeline" if the user is logged in', () => {
+    it('Checks for that buttons for logged in user are the right ones', () => {
+
+        // ---------------- SETUP ---------------- //
+
         const username = uid()
 
+        // register
         cy.visit('localhost:8080/register')
         cy.get('input[name="username"]').type(username)
         cy.get('input[name="email"]').type('example@mail.com')
@@ -47,12 +51,17 @@ describe('Navigation buttons', () => {
         cy.get('input[name="password2"]').type('password')
         cy.get('input').contains('Sign Up').click()
 
+        // login
         cy.visit('localhost:8080/login')
         cy.get('input[name="username"]').type(username)
         cy.get('input[name="password"]').type('password')
         cy.get('input').contains('Sign In').click()
 
         cy.visit('localhost:8080/')
+
+        // ---------------- TEST ---------------- //
+
+        // check to see if the links that appear contain 'my timeline', 'public timeline' and 'sign out'
         cy.get('a').contains('my timeline')
         cy.get('a').contains('public timeline')
         cy.get('a').contains('sign out')
