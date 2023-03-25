@@ -3,12 +3,31 @@
 FROM alpine:edge AS build
 RUN apk add --no-cache --update go gcc g++
 
+ARG db_user
+ARG db_host
+ARG db_password
+ARG db_name
+ARG db_port
+ARG port
+ARG session_key
+ARG gin_mode
+
 # Create a directory inside the container to store all our application 
 # and then make it the working directory.
 WORKDIR /usr/src/app
 
-# Copy everything and Download Go modules
+# Copy everything
 COPY . .
+
+RUN sed -i 's/\r$//' env_file.sh
+
+# Give permissions to run env_file.sh
+RUN chmod +x env_file.sh
+
+# Create .env if it doesn't exist
+RUN sh env_file.sh ${db_user} ${db_password} ${db_name} ${db_port} ${db_host} ${port} ${session_key} ${gin_mode}
+
+# Download Go modules
 RUN go mod download && go mod tidy
 
 # Build the application (this will build only minitwit.go)
