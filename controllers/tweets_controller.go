@@ -8,6 +8,8 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"github.com/gin-gonic/gin"
+
+    "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const Per_page int = 30
@@ -120,7 +122,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 				users_page = true
 
 				c.HTML(http.StatusOK, "timeline.html", gin.H{
-					"title":     "My Timeline ONE",
+					"title":     "My Timeline",
 					"user":      user,
 					"private":   true,
 					"user_page": true,
@@ -131,7 +133,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 				if followed == true {
 					// If logged in and user != endpoint
 					c.HTML(http.StatusOK, "timeline.html", gin.H{
-						"title":         username + "'s Timeline TWO",
+						"title":         username + "'s Timeline",
 						"user_timeline": true,
 						"private":       true,
 						"user":          username,
@@ -143,7 +145,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 					// If not following
 					// If logged in and user != endpoint
 					c.HTML(http.StatusOK, "timeline.html", gin.H{
-						"title":         username + "'s Timeline THREE",
+						"title":         username + "'s Timeline",
 						"user_timeline": true,
 						"private":       true,
 						"user":          username,
@@ -155,7 +157,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 		} else {
 			// If not logged in
 			c.HTML(http.StatusOK, "timeline.html", gin.H{
-				"title":         username + "'s Timeline FOUR",
+				"title":         username + "'s Timeline",
 				"user_timeline": true,
 				"private":       true,
 				"messages":      GetMessages("individual", int(userID), 0),
@@ -165,7 +167,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 }
 
 // ENDPOINT: POST /add_message
-func addMessage(c *gin.Context) { //Registers a new message for the user.
+func addMessage(c *gin.Context) { // Registers a new message for the user.
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
@@ -197,12 +199,21 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 
 }
 
+func metricsHandler() gin.HandlerFunc {
+	h := promhttp.Handler()
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
 func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/static", "./static/")
 
+	router.GET("/metrics", metricsHandler())
 	router.GET("/ping", ping)
 	router.GET("/", timeline)
 	router.GET("/public", public)
