@@ -80,6 +80,14 @@ func timeline(c *gin.Context) {
 	})
 }
 
+// ENDPOINT: GET /public
+func public(c *gin.Context) {
+
+	c.JSON(http.StatusOK, gin.H{
+		"messages": GetMessages("public", 0, 0),
+	})
+}
+
 // ENDPOINT: GET /:username
 func username(c *gin.Context) { // Displays an individual's timeline
 
@@ -91,11 +99,15 @@ func username(c *gin.Context) { // Displays an individual's timeline
 		return
 	}
 
+	user, _ := c.Get("user")
+
+	usr := user.(entities.User)
+
 	// if endpoint is a username
 	if username != "" {
 		// if logged in
-		if user != -1 {
-			followed := GetFollower(uint(userID), uint(user))
+		if usr.ID != 0 {
+			followed := GetFollower(uint(userID), uint(usr.ID))
 			var users_page = false
 			// If logged in user == endpoint
 			if user == int(userID) {
@@ -106,7 +118,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 					"user":      user,
 					"private":   true,
 					"user_page": true,
-					"messages":  GetMessages("myTimeline", user, 0),
+					"messages":  GetMessages("myTimeline", int(usr.ID), 0),
 				})
 			} else {
 				// If following
@@ -160,7 +172,7 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 	c.Bind(&body)
 
 	message := entities.Message{
-		Author_id: uint(user), // AUTHOR ID SHOULD GET SESSION USER ID
+		Author_id: uint(usr.ID), // AUTHOR ID SHOULD GET SESSION USER ID
 		Text:      body.Text,
 		Pub_Date:  uint(time.Now().Unix()),
 		Flagged:   false,
