@@ -5,3 +5,5 @@ __pycache__
 .vagrant/
 db_ip.txt
 node_modules/
+cypress/videos
+cypress/screenshots
