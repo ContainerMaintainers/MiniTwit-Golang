@@ -20,6 +20,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
     
+      - name: Create .env
+        run: |
+          touch .env
+          echo SESSION_KEY="${{ secrets.SESSION_KEY }}" >> .env
+          echo GIN_MODE="${{ vars.GIN_MODE }}" >> .env
+          echo PORT="${{ vars.PORT }}" >> .env
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
