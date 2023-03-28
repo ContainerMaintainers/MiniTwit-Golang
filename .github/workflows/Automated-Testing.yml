@@ -20,7 +20,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
     
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.15
+        
+      - name: Run minitwit
+        run: go run minitwit.go -t
+    
       - name: Cypress run
         uses: cypress-io/github-action@v5.5.1
         with:
-          start: go run minitwit.go -t
+          wait-on: 'http://localhost:8080'
