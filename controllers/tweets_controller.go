@@ -74,7 +74,7 @@ func timeline(c *gin.Context) {
 
 	usr := user.(entities.User)
 
-	c.HTML(http.StatusOK, "timeline.html", gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"messages": GetMessages("myTimeline", int(usr.ID), 0),
 		"user":     user,
 	})
@@ -113,7 +113,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 			if user == int(userID) {
 				users_page = true
 
-				c.HTML(http.StatusOK, "timeline.html", gin.H{
+				c.JSON(http.StatusOK, gin.H{
 					"title":     "My Timeline ONE",
 					"user":      user,
 					"private":   true,
@@ -124,7 +124,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 				// If following
 				if followed == true {
 					// If logged in and user != endpoint
-					c.HTML(http.StatusOK, "timeline.html", gin.H{
+					c.JSON(http.StatusOK, gin.H{
 						"title":         username + "'s Timeline TWO",
 						"user_timeline": true,
 						"private":       true,
@@ -136,7 +136,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 				} else {
 					// If not following
 					// If logged in and user != endpoint
-					c.HTML(http.StatusOK, "timeline.html", gin.H{
+					c.JSON(http.StatusOK, gin.H{
 						"title":         username + "'s Timeline THREE",
 						"user_timeline": true,
 						"private":       true,
@@ -148,7 +148,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 			}
 		} else {
 			// If not logged in
-			c.HTML(http.StatusOK, "timeline.html", gin.H{
+			c.JSON(http.StatusOK, gin.H{
 				"title":         username + "'s Timeline FOUR",
 				"user_timeline": true,
 				"private":       true,

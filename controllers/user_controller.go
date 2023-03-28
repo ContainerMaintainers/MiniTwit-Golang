@@ -154,7 +154,7 @@ func validate(c *gin.Context) {
 	user, _ := c.Get("user")
 
 	c.JSON(200, gin.H{
-		"message": user,
+		"user": user,
 	})
 }
 
@@ -170,14 +170,14 @@ func logoutf(c *gin.Context) {
 
 // ENDPOINT: GET /register
 func register(c *gin.Context) {
-	c.HTML(http.StatusOK, "register.html", gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"messages": "register page",
 	})
 }
 
 // ENDPOINT: GET /login
 func loginf(c *gin.Context) {
-	c.HTML(http.StatusOK, "login.html", gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"messages": "Login page",
 	})
 }
@@ -188,25 +188,25 @@ func ValidRegistration(c *gin.Context, username string, email string, password1 
 	//error = ""
 	if password1 == "" || email == "" || username == "" {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Missing Field")
-		c.HTML(http.StatusOK, "register.html", gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"error": "All fields are required",
 		})
 		return false
 	} else if email == "" || !strings.Contains(email, "@") {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Invalid email")
-		c.HTML(http.StatusOK, "register.html", gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"error": "You have to enter a valid email address",
 		})
 		return false
 	} else if password1 != password2 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Passwords do not match")
-		c.HTML(http.StatusOK, "register.html", gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"error": "The two passwords do not match",
 		})
 		return false
 	} else if _, err := getUserId(username); err == nil {
 		log.Print("Ran into error during " + c.Request.RequestURI + ": " + " Username already taken")
-		c.HTML(http.StatusOK, "register.html", gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"error": "The username is already taken",
 		})
 		return false
