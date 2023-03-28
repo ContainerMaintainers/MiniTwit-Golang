@@ -1,13 +1,20 @@
-FROM node:16.7-alpine AS build
+# Use the official Node.js v16.x LTS image as the base image
+FROM node:16-alpine3.14
 
+# Set the working directory to /app
 WORKDIR /app
+
+# Copy package.json and package-lock.json files to the container
 COPY ./frontend .
-RUN yarn
-RUN yarn build
 
-FROM nginx:1.18-alpine AS deploy-static
+# Install the project dependencies
+RUN npm install
 
-WORKDIR /usr/share/nginx/html
-RUN rm -rf ./*
-COPY --from=bulid /app/build .
-ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
+# Build the project for production
+RUN npm run build
+
+# Expose port 3002
+EXPOSE 5173
+
+# Start the application
+CMD ["npm", "run", "dev"]

@@ -40,9 +40,8 @@ services:
     build: 
       context: ../
       dockerfile: ./docker/frontend/Dockerfile
-      target: deploy-static
     ports:
-      - "3000:80"
+      - 5173:5173
     networks:
       - minitwit-net
 
