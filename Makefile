@@ -1,11 +1,11 @@
 start:
-	docker compose up
+	docker compose --env-file ./.env -f docker/docker-compose.yml up 
 
 stop:
-	docker compose down
+	docker compose --env-file ./.env -f docker/docker-compose.yml down
 
 fresh_start:
-	docker compose up --build
+	docker compose --env-file ./.env -f docker/docker-compose.yml up --build
 
 prune_docker:
 	docker system prune -a

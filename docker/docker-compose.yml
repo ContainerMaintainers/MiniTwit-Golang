@@ -2,8 +2,8 @@ version: "3.8"
 services:
 
   postgres:
-    container_name: minitwit-postgres
     image: postgres
+    container_name: minitwit-postgres
     restart: always
     environment:
       - POSTGRES_USER=${DB_USER}
@@ -16,18 +16,37 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - minitwit-net
 
   web:
     image: minitwit-webapp
+    build: 
+      context: ../
+      dockerfile: ./docker/backend/Dockerfile
     container_name: minitwit-web
     depends_on:
       postgres:
         condition: service_healthy
-    build: 
-      context: .
-      dockerfile: Dockerfile
     ports:
       - '8080:8080'
     restart: always
     links:
       - postgres:database
+    networks:
+      - minitwit-net
+  
+  frontend:
+    build: 
+      context: ../
+      dockerfile: ./docker/frontend/Dockerfile
+      target: deploy-static
+    ports:
+      - "3000:80"
+    networks:
+      - minitwit-net
+
+networks:
+  minitwit-net:
+    name: minitwit-net
+    driver: bridge
