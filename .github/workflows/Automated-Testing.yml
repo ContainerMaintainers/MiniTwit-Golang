@@ -3,14 +3,14 @@ name: Minitwit Automated Testing
 on:
   push:
     branches:
-      - enabler/cypress-tests
+      - development
   workflow_run:
     workflows:
       - "Automated Testing"
     types:
       - completed
     branches:
-      - enabler/cypress-tests
+      - development
 
 jobs:
   cypress-test:
