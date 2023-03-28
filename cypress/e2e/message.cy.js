@@ -9,18 +9,10 @@ describe('Create message', () => {
         const username = uid()
 
         // register
-        cy.visit('localhost:8080/register')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="email"]').type('example@mail.com')
-        cy.get('input[name="password"]').type('password')
-        cy.get('input[name="password2"]').type('password')
-        cy.get('input').contains('Sign Up').click()
+        cy.register(username, "user@example.com", "password", "password")
 
         // login
-        cy.visit('localhost:8080/login')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="password"]').type('password')
-        cy.get('input').contains('Sign In').click()
+        cy.login(username, "password")
         
         // visit user page
         cy.visit('localhost:8080/'+username)
@@ -45,24 +37,15 @@ describe('Create message', () => {
         const username = uid()
 
         // register
-        cy.visit('localhost:8080/register')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="email"]').type('example@mail.com')
-        cy.get('input[name="password"]').type('password')
-        cy.get('input[name="password2"]').type('password')
-        cy.get('input').contains('Sign Up').click()
+        cy.register(username, "user@example.com", "password", "password")
 
         // login
-        cy.visit('localhost:8080/login')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="password"]').type('password')
-        cy.get('input').contains('Sign In').click()
+        cy.login(username, "password")
         
-        cy.visit('localhost:8080/'+username)
-
         // create message
-        cy.get('input[name="text"]').type(message)
-        cy.get('input').contains("Share").click()
+        cy.createMessage(username, message)
+
+        // ---------------- TEST ---------------- //
 
         cy.contains('li', username).contains(message)
 
@@ -79,24 +62,13 @@ describe('Create message', () => {
         const username = uid()
 
         // register
-        cy.visit('localhost:8080/register')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="email"]').type('example@mail.com')
-        cy.get('input[name="password"]').type('password')
-        cy.get('input[name="password2"]').type('password')
-        cy.get('input').contains('Sign Up').click()
+        cy.register(username, "user@example.com", "password", "password")
 
         // login
-        cy.visit('localhost:8080/login')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="password"]').type('password')
-        cy.get('input').contains('Sign In').click()
+        cy.login(username, "password")
         
-        cy.visit('localhost:8080/'+username)
-
         // create message
-        cy.get('input[name="text"]').type(message)
-        cy.get('input').contains("Share").click()
+        cy.createMessage(username, message)
 
         cy.visit('localhost:8080/public')
 
@@ -117,24 +89,13 @@ describe('Create message', () => {
         const username = uid()
 
         // register
-        cy.visit('localhost:8080/register')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="email"]').type('example@mail.com')
-        cy.get('input[name="password"]').type('password')
-        cy.get('input[name="password2"]').type('password')
-        cy.get('input').contains('Sign Up').click()
+        cy.register(username, "user@example.com", "password", "password")
 
         // login
-        cy.visit('localhost:8080/login')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="password"]').type('password')
-        cy.get('input').contains('Sign In').click()
+        cy.login(username, "password")
         
-        cy.visit('localhost:8080/'+username)
-
         // create message
-        cy.get('input[name="text"]').type(message)
-        cy.get('input').contains("Share").click()
+        cy.createMessage(username, message)
 
         cy.get('a').contains('sign out').click()
 
@@ -155,30 +116,17 @@ describe('Create message', () => {
         const username = uid()
 
         // register
-        cy.visit('localhost:8080/register')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="email"]').type('example@mail.com')
-        cy.get('input[name="password"]').type('password')
-        cy.get('input[name="password2"]').type('password')
-        cy.get('input').contains('Sign Up').click()
+        cy.register(username, "user@example.com", "password", "password")
 
         // login
-        cy.visit('localhost:8080/login')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="password"]').type('password')
-        cy.get('input').contains('Sign In').click()
+        cy.login(username, "password")
         
-        cy.visit('localhost:8080/'+username)
-
         // create first message
-        cy.get('input[name="text"]').type(message1)
-        cy.get('input').contains("Share").click()
-
-        cy.visit('localhost:8080/'+username)
+        cy.createMessage(username, message1)
 
         // create second message
-        cy.get('input[name="text"]').type(message2)
-        cy.get('input').contains("Share").click()
+        cy.createMessage(username, message2)
+
 
         // ---------------- TEST ---------------- //
 

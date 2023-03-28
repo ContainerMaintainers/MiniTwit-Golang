@@ -44,18 +44,10 @@ describe('Navigation buttons', () => {
         const username = uid()
 
         // register
-        cy.visit('localhost:8080/register')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="email"]').type('example@mail.com')
-        cy.get('input[name="password"]').type('password')
-        cy.get('input[name="password2"]').type('password')
-        cy.get('input').contains('Sign Up').click()
+        cy.register(username, "user@example.com", "password", "password")
 
         // login
-        cy.visit('localhost:8080/login')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="password"]').type('password')
-        cy.get('input').contains('Sign In').click()
+        cy.login(username, 'password')
 
         cy.visit('localhost:8080/')
 

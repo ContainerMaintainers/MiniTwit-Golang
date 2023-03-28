@@ -13,18 +13,10 @@ describe('Login error messages', () => {
         const username = uid()
 
         // register
-        cy.visit('localhost:8080/register')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="email"]').type('example@mail.com')
-        cy.get('input[name="password"]').type('password')
-        cy.get('input[name="password2"]').type('password')
-        cy.get('input').contains('Sign Up').click()
+        cy.register(username, "user@example.com", "password", "password")
 
         // login with wrong password
-        cy.visit('localhost:8080/login')
-        cy.get('input[name="username"]').type(username)
-        cy.get('input[name="password"]').type('wrong')
-        cy.get('input').contains('Sign In').click()
+        cy.login(username, "wrong")
 
         // ---------------- TEST ---------------- //
 
@@ -36,10 +28,7 @@ describe('Login error messages', () => {
         // ---------------- SETUP ---------------- //
 
         // login without registering
-        cy.visit('localhost:8080/login')
-        cy.get('input[name="username"]').type(uid())
-        cy.get('input[name="password"]').type('password')
-        cy.get('input').contains('Sign In').click()
+        cy.login(uid(), "password")
 
         // ---------------- TEST ---------------- //
 
