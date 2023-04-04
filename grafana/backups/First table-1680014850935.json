@@ -1,8 +1,8 @@
 {
   "__inputs": [
     {
-      "name": "DS_PROMETHEUS",
-      "label": "Prometheus",
+      "name": "DS_TWIT",
+      "label": "twit",
       "description": "",
       "type": "datasource",
       "pluginId": "prometheus",
@@ -54,7 +54,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "${DS_TWIT}",
           "fill": 1,
           "id": 1,
           "legend": {
@@ -170,7 +170,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "${DS_TWIT}",
           "decimals": null,
           "fill": 1,
           "id": 3,
@@ -207,7 +207,7 @@
               "intervalFactor": 10,
               "legendFormat": "",
               "refId": "A",
-              "step": 200
+              "step": 150
             }
           ],
           "thresholds": [],
@@ -256,7 +256,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(50, 172, 45, 0.97)"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "${DS_TWIT}",
           "format": "none",
           "gauge": {
             "maxValue": 100,
@@ -301,11 +301,11 @@
             "lineColor": "rgb(31, 120, 193)",
             "show": false
           },
-          "tableColumn": "",
+          "tableColumn": "Value",
           "targets": [
             {
               "expr": "up{group=\"production\"}",
-              "format": "time_series",
+              "format": "table",
               "hide": false,
               "intervalFactor": 2,
               "refId": "A",
@@ -376,6 +376,6 @@
     ]
   },
   "timezone": "",
-  "title": "First table",
-  "version": 5
+  "title": "MiniTwit",
+  "version": 4
 }
