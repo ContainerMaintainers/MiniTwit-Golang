@@ -195,6 +195,7 @@ func addMessage(c *gin.Context) { //Registers a new message for the user.
 func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
+
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/static", "./static/")
 
@@ -205,7 +206,7 @@ func SetupRouter() *gin.Engine {
 	router.POST("/:username/follow", middleware.CORSMiddleware(), middleware.RequireAuth, usernameFollow)
 	router.DELETE("/:username/unfollow", middleware.CORSMiddleware(), middleware.RequireAuth, usernameUnfollow)
 	router.POST("/register", middleware.CORSMiddleware(), register_user)
-	router.GET("/register", middleware.CORSMiddleware(), register)
+	//router.GET("/register", middleware.CORSMiddleware(), register)
 	router.POST("/add_message", middleware.CORSMiddleware(), middleware.RequireAuth, addMessage)
 	router.POST("/login", middleware.CORSMiddleware(), login_user)
 	router.GET("/login", middleware.CORSMiddleware(), loginf)
@@ -220,6 +221,8 @@ func SetupRouter() *gin.Engine {
 	router.GET("/sim/msgs/:username", simGetUserMsg)
 	router.POST("/sim/fllws/:username", simPostUserFllws)
 	router.GET("/sim/fllws/:username", simGetUserFllws)
+
+	router.Use(middleware.CORSMiddleware())
 
 	return router
 
