@@ -27,7 +27,7 @@ func usernameFollow(c *gin.Context) { // Adds the current user as follower of th
 
 	user, _ := c.Get("user")
 
-	who := user.(entities.User) // SHOULD GET SESSION USER ID
+	who, _ := user.(entities.User) // SHOULD GET SESSION USER ID
 
 	username := c.Param("username")
 
@@ -68,7 +68,7 @@ func usernameUnfollow(c *gin.Context) { // Adds the current user as follower of 
 
 	user, _ := c.Get("user")
 
-	who := user.(entities.User) // SHOULD GET SESSION USER ID
+	who, _ := user.(entities.User) // SHOULD GET SESSION USER ID
 
 	username := c.Param("username")
 
@@ -141,9 +141,7 @@ func login_user(c *gin.Context) { //Logs the user in.
 		c.SetSameSite(http.SameSiteLaxMode)
 		c.SetCookie("UserAuthorization", tokenString, 3600*24*30, "", "", false, true) //set false to true when not on local host,
 
-		user_path := "/" + body.Username
-		location := url.URL{Path: user_path}
-		c.Redirect(http.StatusFound, location.RequestURI())
+		c.String(200, "logged in")
 
 	} else {
 		c.String(400, error)

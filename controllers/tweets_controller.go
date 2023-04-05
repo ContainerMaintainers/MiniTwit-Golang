@@ -202,14 +202,16 @@ func SetupRouter() *gin.Engine {
 	router.GET("/", middleware.CORSMiddleware(), middleware.RequireAuth, timeline)
 	router.GET("/public", middleware.CORSMiddleware(), public)
 	router.GET("/:username", middleware.CORSMiddleware(), username)
-	router.POST("/:username/follow", middleware.CORSMiddleware(), usernameFollow)
-	router.DELETE("/:username/unfollow", middleware.CORSMiddleware(), usernameUnfollow)
+	router.POST("/:username/follow", middleware.CORSMiddleware(), middleware.RequireAuth, usernameFollow)
+	router.DELETE("/:username/unfollow", middleware.CORSMiddleware(), middleware.RequireAuth, usernameUnfollow)
 	router.POST("/register", middleware.CORSMiddleware(), register_user)
 	router.GET("/register", middleware.CORSMiddleware(), register)
 	router.POST("/add_message", middleware.CORSMiddleware(), middleware.RequireAuth, addMessage)
 	router.POST("/login", middleware.CORSMiddleware(), login_user)
 	router.GET("/login", middleware.CORSMiddleware(), loginf)
 	router.PUT("/logout", middleware.CORSMiddleware(), logoutf) // Changed temporarily to satisfy tests, should it be put or get?
+
+	router.GET("/validate", middleware.CORSMiddleware(), middleware.RequireAuth, validate)
 
 	router.GET("/sim/latest", simLatest)
 	router.POST("/sim/register", simRegister)
