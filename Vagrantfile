@@ -145,6 +145,42 @@ Vagrant.configure("2") do |config|
       echo "http://${THIS_IP}:8080"
     SHELL
   end
+
+  config.vm.define "loki", primary: true do |server|
+    server.vm.provider :digital_ocean do |provider|
+      provider.ssh_key_name = ENV["SSH_KEY_NAME"]
+      provider.token = ENV["DIGITAL_OCEAN_TOKEN"]
+      provider.image = 'ubuntu-18-04-x64'
+      provider.region = 'fra1'
+      provider.size = 's-1vcpu-1gb'
+      provider.privatenetworking = true
+    end
+
+    server.vm.hostname = "loki"
+
+    server.vm.provision "shell", inline: <<-SHELL
+      cp -r /vagrant/* $HOME
+      echo "Installing docker..."
+      sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+      apt-cache policy docker-ce
+      sudo apt install -y docker-ce
+      sudo systemctl status docker
+      sudo usermod -aG docker ${USER}
+      echo "Verifying that docker works"
+      docker run --rm hello-world
+      docker rmi hello-world  
+    
+      echo "Installing loki"
+      docker pull grafana/loki
+      echo "Installing loki"
+      docker run -d --name=loki --mount source=loki-data,target=/loki -p 3100:3100 grafana/loki
+   SHELL
+  end
+
+
+
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
     sudo apt-get update
   SHELL
