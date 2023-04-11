@@ -182,13 +182,13 @@ Vagrant.configure("2") do |config|
       docker pull prom/prometheus
 
       echo "Installing grafana"
-      docker pull grafana/grafana:4.5.2
+      docker pull grafana/grafana:9.4.7
 
       echo "Running prometheus"
       docker run -d -p 9090:9090 -v ./prometheus.yml:/etc/prometheus/prometheus.yml --name prometheus prom/prometheus
 
       echo "Running grafana"
-      docker run -d -p 3000:3000 --name grafana grafana/grafana:4.5.2
+      docker run -d -p 3000:3000 --name grafana grafana/grafana:9.4.7
 
       echo "Running loki"
       docker run -d --name=loki --mount source=loki-data,target=/loki -p 3100:3100 grafana/loki
