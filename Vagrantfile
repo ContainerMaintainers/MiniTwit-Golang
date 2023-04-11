@@ -129,7 +129,10 @@ Vagrant.configure("2") do |config|
       docker build -t $DOCKER_USERNAME/minitwit:latest --build-arg db_user=$DB_USER --build-arg db_host=$DB_HOST --build-arg db_password=$DB_PASSWORD --build-arg db_name=$DB_NAME --build-arg db_port=$DB_PORT --build-arg port=$PORT --build-arg session_key=$SESSION_KEY --build-arg gin_mode=$GIN_MODE .
 
       echo "Logging into docker"
-      docker login --username $DOCKER_USERNAME --pasword $DOCKER_PASSWORD
+      docker login --username $DOCKER_USERNAME --pasword $DOCKER_PASSWORD¨
+
+      echo "Installing loki-docker-driver"
+      docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
 
       echo "Running docker image..."
       docker run --rm -d -p $PORT:$PORT --name minitwit $DOCKER_USERNAME/minitwit:latest
@@ -172,6 +175,9 @@ Vagrant.configure("2") do |config|
       docker run --rm hello-world
       docker rmi hello-world  
     
+      echo "Installing loki"
+      docker pull grafana/loki
+
       echo "Installing prometheus"
       docker pull prom/prometheus
 
@@ -183,6 +189,9 @@ Vagrant.configure("2") do |config|
 
       echo "Running grafana"
       docker run -d -p 3000:3000 --name grafana grafana/grafana:4.5.2
+
+      echo "Running loki"
+      docker run -d --name=loki --mount source=loki-data,target=/loki -p 3100:3100 grafana/loki
 
    SHELL
   end
