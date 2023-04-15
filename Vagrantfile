@@ -184,8 +184,17 @@ Vagrant.configure("2") do |config|
       echo "Installing grafana"
       docker pull grafana/grafana:9.4.7
 
+      echo "Removing grafana"
+      docker stop grafana && docker rm -f grafana
+
+      echo "Removing loki"
+      docker stop loki && docker rm -f loki
+      
+      echo "Removing prometheus"
+      docker stop prometheus && docker rm -f prometheus
+
       echo "Running prometheus"
-      docker run -d -p 9090:9090 -v ./prometheus.yml:/etc/prometheus/prometheus.yml --name prometheus prom/prometheus
+      docker run -d -p 9090:9090 -v ./prometheus.yml:/etc/prometheus/prometheus.yml -v /prometheus:/prometheus --name prometheus prom/prometheus
 
       echo "Running grafana"
       docker run -d -p 3000:3000 --name grafana grafana/grafana:9.4.7
