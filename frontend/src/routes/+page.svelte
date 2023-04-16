@@ -1,6 +1,4 @@
-<script>
-    
-    //let data = fetch('localhost:8080/').then(res => res.json())
+<script lang="ts">
 
     let apiResJson = fetch('http://localhost:8080/public').then(res => res.json())
     let data = apiResJson.then(res => res['messages'])
