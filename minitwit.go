@@ -13,10 +13,6 @@ var (
 	user     = -1
 )
 
-func init() {
-	initializers.LoadEnvVars()
-}
-
 func main() {
 
 	flag.Parse()
