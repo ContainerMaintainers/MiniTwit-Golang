@@ -21,9 +21,6 @@ COPY . .
 
 RUN sed -i 's/\r$//' env_file.sh
 
-# Give permissions to run env_file.sh
-RUN chmod +x env_file.sh
-
 # Download Go modules
 RUN go mod download && go mod tidy
 
