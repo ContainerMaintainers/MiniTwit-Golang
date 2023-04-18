@@ -4,7 +4,6 @@ import (
 	"flag"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/controllers"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 )
 
 var (
