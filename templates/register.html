@@ -1,6 +1,6 @@
 <!doctype html>
 <head>
-  <title>Welcome | MiniTwit</title>
+  <title>Sign up | MiniTwit</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../static/favicon_io/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../static/favicon_io/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../static/favicon_io/favicon-16x16.png">
@@ -8,15 +8,15 @@
 </head>
 <link rel=stylesheet type=text/css href="/static/style.css">
 <div class=page>
-  <h1>MiniTwit | Sign Up</h1>
+  <h1>🐣 MiniTwit</h1>
   <div class=navigation>
   {{ if .user }}  
-    <a href="/timeline">my timeline</a> |
-    <a href="/public">public</a> |
+    <a href="/timeline">my timeline</a>
+    <a href="/public">public</a>
     <a href="/logout">sign out</a>
   {{ else }}
-    <a href="/public">public timeline</a> |
-    <a href="/register">sign up</a> |
+    <a href="/public">public timeline</a>
+    <a href="/register">sign up</a>
     <a href="/login">sign in</a>
   {{ end }}
   </div>
