@@ -9,7 +9,7 @@ import (
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"github.com/gin-gonic/gin"
 
-    "github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const Per_page int = 30
@@ -32,6 +32,7 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 			Joins("left join users on users.id = messages.Author_id").
 			Offset(pagenum * Per_page).
 			Limit(Per_page).
+			Order("messages.Pub_Date desc").
 			Scan(&joinedMessages)
 
 	} else if timelineType == "myTimeline" {
@@ -43,6 +44,7 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 			Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
 			Offset(pagenum * Per_page).
 			Limit(Per_page).
+			Order("messages.Pub_Date desc").
 			Scan(&joinedMessages)
 
 	} else if timelineType == "individual" {
@@ -53,6 +55,7 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 			Where("messages.flagged = ? AND (messages.author_id = ?)", false, user).
 			Offset(pagenum * Per_page).
 			Limit(Per_page).
+			Order("messages.Pub_Date desc").
 			Scan(&joinedMessages)
 
 	}
