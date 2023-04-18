@@ -194,7 +194,7 @@ Vagrant.configure("2") do |config|
       docker stop prometheus && docker rm -f prometheus
 
       echo "Running prometheus"
-      docker run -d -p 9090:9090 -v ./prometheus.yml:/etc/prometheus/prometheus.yml -v /prometheus:/prometheus --name prometheus prom/prometheus
+      docker run -d -p 9090:9090 -u $(id -u) -v ./prometheus.yml:/etc/prometheus/prometheus.yml -v /prometheus:/prometheus --name prometheus prom/prometheus
 
       echo "Running grafana"
       docker run -d -p 3000:3000 --name grafana grafana/grafana:9.4.7
