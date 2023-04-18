@@ -3,14 +3,14 @@ name: Minitwit Continuous Deployment
 on:
   push:
     branches:
-      - main
+      - bug/env-credentials-in-container
   workflow_run:
     workflows:
       - "Continuous Deployment"
     types:
       - completed
     branches:
-      - main
+      - bug/env-credentials-in-container
 
 jobs:
   build:
