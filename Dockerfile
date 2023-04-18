@@ -19,8 +19,6 @@ WORKDIR /usr/src/app
 # Copy everything
 COPY . .
 
-RUN sed -i 's/\r$//' env_file.sh
-
 # Download Go modules
 RUN go mod download && go mod tidy
 
