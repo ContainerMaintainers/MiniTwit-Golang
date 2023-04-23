@@ -2,14 +2,17 @@ package controllers
 
 import (
 	//"fmt"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
+
+	"github.com/ContainerMaintainers/MiniTwit-Golang/monitoring"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -18,7 +21,9 @@ var (
 )
 
 // ENDPOINT: GET /:username/follow
-func usernameFollow(c *gin.Context) { // Adds the current user as follower of the given user
+func UsernameFollow(c *gin.Context) { // Adds the current user as follower of the given user
+
+	monitoring.CountEndpoint("/:username/follow", "GET")
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
@@ -37,7 +42,7 @@ func usernameFollow(c *gin.Context) { // Adds the current user as follower of th
 		}
 
 		follow := entities.Follower{
-			Who_ID:  who, 
+			Who_ID:  who,
 			Whom_ID: whom,
 		}
 
@@ -64,7 +69,9 @@ func GetFollower(follower uint, following uint) bool {
 }
 
 // ENDPOINT: GET /:username/unfollow
-func usernameUnfollow(c *gin.Context) { // Adds the current user as follower of the given user
+func UsernameUnfollow(c *gin.Context) { // Adds the current user as follower of the given user
+
+	monitoring.CountEndpoint("/:username/unfollow", "GET")
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
@@ -81,7 +88,7 @@ func usernameUnfollow(c *gin.Context) { // Adds the current user as follower of 
 		}
 
 		unfollow := entities.Follower{
-			Who_ID:  who, 
+			Who_ID:  who,
 			Whom_ID: whom,
 		}
 
@@ -105,7 +112,7 @@ func valid_login(c *gin.Context, message string, user int) bool {
 			"error": "Invalid Username",
 		})
 		return false
-	} else if message == "Invalid password"  {
+	} else if message == "Invalid password" {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Invalid password")
 		c.HTML(http.StatusOK, "login.html", gin.H{
 			"error": "Invalid password",
@@ -114,7 +121,7 @@ func valid_login(c *gin.Context, message string, user int) bool {
 	} else if message == "You were logged in" {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
 			"title":     "My Timeline ONE",
-			"flashes":	 message,
+			"flashes":   message,
 			"user":      user,
 			"private":   true,
 			"user_page": true,
@@ -123,11 +130,13 @@ func valid_login(c *gin.Context, message string, user int) bool {
 		return true
 	}
 	return true
-	
+
 }
 
 // ENDPOINT: POST /login
-func login_user(c *gin.Context) { //Logs the user in.
+func Login_user(c *gin.Context) { //Logs the user in.
+
+	monitoring.CountEndpoint("/login", "POST")
 
 	var body struct {
 		Username string `form:"username" json:"username"`
@@ -158,27 +167,36 @@ func login_user(c *gin.Context) { //Logs the user in.
 			user = int(userID)
 			valid_login(c, "You were logged in", user)
 		}
-	}	
+	}
 }
 
 // ENDPOINT: GET /logout
-func logout_user(c *gin.Context) {
+func Logout_user(c *gin.Context) {
+
+	monitoring.CountEndpoint("/logout", "GET")
+
 	//clear session user
 	user = -1
-	
+
 	//c.String(200, "You were logged out")
 	c.Redirect(http.StatusFound, "/")
 }
 
 // ENDPOINT: GET /register
-func register(c *gin.Context) {
+func Register(c *gin.Context) {
+
+	monitoring.CountEndpoint("/register", "GET")
+
 	c.HTML(http.StatusOK, "register.html", gin.H{
 		"messages": "register page",
 	})
 }
 
 // ENDPOINT: GET /login
-func loginf(c *gin.Context) {
+func Loginf(c *gin.Context) {
+
+	monitoring.CountEndpoint("/login", "GET")
+
 	c.HTML(http.StatusOK, "login.html", gin.H{
 		"messages": "Login page",
 	})
@@ -186,7 +204,7 @@ func loginf(c *gin.Context) {
 
 // Registration Helper Function
 func ValidRegistration(c *gin.Context, username string, email string, password1 string, password2 string) bool {
-	
+
 	//error = ""
 	if password1 == "" || email == "" || username == "" {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Missing Field")
@@ -217,7 +235,9 @@ func ValidRegistration(c *gin.Context, username string, email string, password1 
 }
 
 // ENDPOINT: POST /register
-func register_user(c *gin.Context) {
+func Register_user(c *gin.Context) {
+
+	monitoring.CountEndpoint("/register", "POST")
 
 	var body struct {
 		Username  string `form:"username" json:"username"`

@@ -1,14 +1,17 @@
 package controllers
 
 import (
-	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
+
+	"github.com/ContainerMaintainers/MiniTwit-Golang/monitoring"
+	"github.com/gin-gonic/gin"
 )
 
 func notReqFromSimulator(request *http.Request) gin.H {
@@ -33,13 +36,18 @@ func updateLatest(request *http.Request) {
 }
 
 // ENDPOINT: GET /sim/latest
-func simLatest(c *gin.Context) {
+func SimLatest(c *gin.Context) {
+
+	monitoring.CountEndpoint("/sim/latest", "GET")
+
 	log.Print("/sim/latest ", latest)
 	c.JSON(200, gin.H{"latest": latest})
 }
 
 // ENDPOINT: POST /sim/register
-func simRegister(c *gin.Context) {
+func SimRegister(c *gin.Context) {
+
+	monitoring.CountEndpoint("/sim/register", "POSt")
 
 	updateLatest(c.Request)
 
@@ -83,7 +91,9 @@ func simRegister(c *gin.Context) {
 }
 
 // ENDPOINT: GET /sim/msgs
-func simMsgs(c *gin.Context) {
+func SimMsgs(c *gin.Context) {
+
+	monitoring.CountEndpoint("/sim/msgs", "GET")
 
 	updateLatest(c.Request)
 
@@ -122,11 +132,13 @@ func simMsgs(c *gin.Context) {
 }
 
 // ENDPOINT: POST /sim/msgs/:username
-func simPostUserMsg(c *gin.Context) {
+func SimPostUserMsg(c *gin.Context) {
 
 	var body struct {
 		Content string `json:"content"`
 	}
+
+	monitoring.CountEndpoint("/sim/msgs/:username", "POST")
 
 	c.BindJSON(&body)
 
@@ -162,7 +174,9 @@ func simPostUserMsg(c *gin.Context) {
 }
 
 // ENDPOINT: GET /sim/msgs/:username
-func simGetUserMsg(c *gin.Context) {
+func SimGetUserMsg(c *gin.Context) {
+
+	monitoring.CountEndpoint("/sim/msgs/:username", "GET")
 
 	updateLatest(c.Request)
 
@@ -204,7 +218,9 @@ func simGetUserMsg(c *gin.Context) {
 }
 
 // ENDPOINT: GET /sim/fllws/:username
-func simGetUserFllws(c *gin.Context) {
+func SimGetUserFllws(c *gin.Context) {
+
+	monitoring.CountEndpoint("/sim/fllws/:username", "GET")
 
 	updateLatest(c.Request)
 
@@ -252,12 +268,14 @@ func simGetUserFllws(c *gin.Context) {
 }
 
 // ENDPOINT: POST /sim/fllws/:username
-func simPostUserFllws(c *gin.Context) {
+func SimPostUserFllws(c *gin.Context) {
 
 	var body struct {
 		Follow   string `json:"follow"`
 		Unfollow string `json:"unfollow"`
 	}
+
+	monitoring.CountEndpoint("/sim/fllws/:username", "POST")
 
 	c.BindJSON(&body)
 
