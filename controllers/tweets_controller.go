@@ -207,15 +207,21 @@ func addMessage(c *gin.Context) { // Registers a new message for the user.
 		c.Status(400)
 		return
 	}
+	
+	username := c.Param("username") // gets the <username> from the url
+	c.HTML(http.StatusOK, "timeline.html", gin.H{
+		"title":     "My Timeline",
+		"user":      user,
+		"private":   true,
+		"user_page": true,
+		"messages":  GetMessages("myTimeline", user, 0),
+		"username":  username, //just added this
+	})
 
 	//username(c) //cannot use username function, because it pulls username from endpoint "/d", but after login, endpoint is /login
-	c.Redirect(http.StatusFound, "/")
-}
-
-// ENDPOINT: GET /add_message
-func addMessageGet(c *gin.Context) {
-	c.Redirect(http.StatusFound, "/")
-	//username(c)
+	//c.Redirect(http.StatusFound, "/")
+	//username := c.Param("username") // gets the <username> from the url
+	//c.Redirect(http.StatusFound, "/"+username)
 }
 
 // ENDPOINT: GET /metrics
@@ -243,7 +249,7 @@ func SetupRouter() *gin.Engine {
 	router.POST("/register", register_user)
 	router.GET("/register", register)
 	router.POST("/add_message", addMessage)
-	router.GET("add_message", addMessageGet)
+	//router.GET("/add_message", addMessageGet)
 	router.POST("/login", login_user)
 	router.GET("/login", loginf)
 	router.GET("/logout", logout_user)
