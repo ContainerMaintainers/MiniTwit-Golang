@@ -19,6 +19,7 @@ type JoinedMessage struct {
 	Username  string
 	Text      string
 	Pub_Date  uint
+	FormattedDate string // new variable to hold the formatted date string
 }
 
 func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
@@ -60,9 +61,15 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 
 	}
 
-	return joinedMessages
+	for i := range joinedMessages {
+		timestamp := time.Unix(int64(joinedMessages[i].Pub_Date), 0)
+		joinedMessages[i].FormattedDate = timestamp.Format("Jan 02, 2006 3:04pm")
+	}
 
+	return joinedMessages
 }
+
+
 
 // ENDPOINT: GET /ping
 func Ping(c *gin.Context) {

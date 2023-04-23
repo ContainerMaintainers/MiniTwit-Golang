@@ -1,178 +1,156 @@
+:root {
+    --primary: #0066cc;
+    --secondary: #004080;
+
+    --background: #f7f7f7ff;
+    --secondary-bg: #bfbdc1ff;
+    --dim-gray: #6d6a75ff;
+    --font: #37323eff;
+
+    --gold-metallic: #deb841ff;
+    --hunyadi-yellow: #de9e36ff;
+  }
+
+/* Font */
 body {
-    background: #CAECE9;
-    font-family: 'Trebuchet MS', sans-serif;
-    font-size: 14px;
+    font-family: 'JetBrains Mono', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--font);
 }
 
+/* Links */
 a {
-    color: #26776F;
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
-
 a:hover {
-    color: #333;
+    color: var(--secondary);
 }
 
+/* Form inputs */
 input[type="text"],
 input[type="password"] {
-    background: white;
-    border: 1px solid #BFE6E2;
-    padding: 2px;
-    font-family: 'Trebuchet MS', sans-serif;
-    font-size: 14px;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    color: #105751;
+    font-family: 'JetBrains Mono', sans-serif;
+    padding: 5px;
+    border: .5px solid var(--secondary-bg);
+    border-radius: 2px;
+    font-size: 13px;
+    color: var(--font);
+    background-color: var(--background);
+    margin-bottom: 10px;
 }
-
 input[type="submit"] {
-    background: #105751;
-    border: 1px solid #073B36;
-    padding: 1px 3px;
-    font-family: 'Trebuchet MS', sans-serif;
-    font-size: 14px;
-    font-weight: bold;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    color: white;
-}
-
-div.page {
-    background: white;
-    border: 1px solid #6ECCC4;
-    width: 700px;
-    margin: 30px auto;
-}
-
-div.page h1 {
-    background: #6ECCC4;
-    margin: 0;
-    padding: 10px 14px;
-    color: white;
-    letter-spacing: 1px;
-    text-shadow: 0 0 3px #24776F;
-    font-weight: normal;
-}
-
-div.page div.navigation {
-    background: #DEE9E8;
-    padding: 4px 10px;
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #eee;
-    color: #888;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-}
-
-div.page div.navigation a {
-    color: #444;
-    font-weight: bold;
-}
-
-div.page h2 {
-    margin: 0 0 15px 0;
-    color: #105751;
-    text-shadow: 0 1px 2px #ccc;
-}
-
-div.page div.body {
-    padding: 10px;
-}
-
-div.page div.footer {
-    background: #eee;
-    color: #888;
+    font-family: 'JetBrains Mono', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
     padding: 5px 10px;
-    font-size: 12px;
-}
-
-div.page div.followstatus {
-    border: 1px solid #ccc;
-    background: #E3EBEA;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    padding: 3px;
+    background-color: var(--primary);
+    border: none;
+    border-radius: 2px;
     font-size: 13px;
+    color: var(--background);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+input[type="submit"]:hover {
+    background-color: var(--secondary);
 }
 
-div.page ul.messages {
+/* Page layout */
+.page {
+    max-width: 700px;
+    margin: 30px auto;
+    background-color: #fff;
+    border-radius: 2px;
+    padding: 20px;
+}
+
+/* Headings */
+h1, h2, h3 {
+    font-family: 'JetBrains Mono', sans-serif;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+h1 {
+    margin-top: 0;
+    font-size: 36px;
+}
+h2 {
+    margin-top: 10px;
+    font-size: 24px;
+}
+
+/* Navigation */
+.navigation {
+    padding: 10px 20px;
+    font-size: 14px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+.navigation a {
+    color: var(--primary);
+    font-weight: bold;
+    margin-right: 20px;
+}
+.navigation a:last-child {
+    margin-right: 0;
+}
+
+/* Messages */
+.messages {
     list-style: none;
     margin: 0;
     padding: 0;
 }
-
-div.page ul.messages li {
-    margin: 10px 0;
-    padding: 5px;
-    background: #F0FAF9;
-    border: 1px solid #DBF3F1;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    min-height: 48px;
+.messages li {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: var(--background);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
 }
-
-div.page ul.messages p {
+.messages p {
     margin: 0;
 }
-
-div.page ul.messages li img {
+.messages img {
     float: left;
-    padding: 0 10px 0 0;
+    margin-right: 10px;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
-div.page ul.messages li small {
-    font-size: 0.9em;
-    color: #888;
-}
-
-div.page div.twitbox {
+/* Error messages */
+.error {
     margin: 10px 0;
-    padding: 5px;
-    background: #F0FAF9;
-    border: 1px solid #94E2DA;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
+    background-color: #fff6f6;
+    border: 1px solid #e0b4b4;
+    border-radius: 2px;
+    padding: 10px;
+    font-size: 14px;
+    color: #9f3a38;
 }
 
-div.page div.twitbox h3 {
-    margin: 0;
-    font-size: 1em;
-    color: #2C7E76;
-}
-
-div.page div.twitbox p {
-    margin: 0;
-}
-
-div.page div.twitbox input[type="text"] {
-    width: 585px;
-}
-
-div.page div.twitbox input[type="submit"] {
-    width: 70px;
-    margin-left: 5px;
-}
-
-ul.flashes {
-    list-style: none;
-    margin: 10px 10px 0 10px;
-    padding: 0;
-}
-
-ul.flashes li {
-    background: #B9F3ED;
-    border: 1px solid #81CEC6;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    padding: 4px;
-    font-size: 13px;
-}
-
-div.error {
+/* Success messages */
+.success {
     margin: 10px 0;
-    background: #FAE4E4;
-    border: 1px solid #DD6F6F;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    padding: 4px;
-    font-size: 13px;
+    background-color: #fcfff5;
+    border: 1px solid #bce8bc;
+    border-radius: 2px;
+    padding: 10px
 }
+
+/* Flash message styles */
+.flashes {
+    margin: 10px 0;
+    background-color: #fcfff5;
+    border: 1px solid #bce8bc;
+    border-radius: 2px;
+    padding: 10px
+  }
