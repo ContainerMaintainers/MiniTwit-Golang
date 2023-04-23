@@ -104,9 +104,11 @@ func public(c *gin.Context) {
 		})
 	} else {
 		// if there exists a session user, show my timeline
+		username := c.Param("username")
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
 			"messages": GetMessages("public", user, 0),
 			"user":     user,
+			"username": username,
 		})
 	}
 }
@@ -137,6 +139,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 					"private":   true,
 					"user_page": true,
 					"messages":  GetMessages("myTimeline", user, 0),
+					"username":  username,
 				})
 			} else {
 				// If following
@@ -205,7 +208,8 @@ func addMessage(c *gin.Context) { // Registers a new message for the user.
 		return
 	}
 
-	c.Redirect(http.StatusFound, "/")
+	timeline(c)
+	//c.Redirect(http.StatusFound, "/")
 
 }
 
