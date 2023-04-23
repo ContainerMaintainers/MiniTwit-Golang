@@ -139,7 +139,7 @@ func username(c *gin.Context) { // Displays an individual's timeline
 					"private":   true,
 					"user_page": true,
 					"messages":  GetMessages("myTimeline", user, 0),
-					"username":  username,
+					"username":  username, //just added this
 				})
 			} else {
 				// If following
@@ -208,11 +208,17 @@ func addMessage(c *gin.Context) { // Registers a new message for the user.
 		return
 	}
 
-	timeline(c)
-	//c.Redirect(http.StatusFound, "/")
-
+	//username(c) //cannot use username function, because it pulls username from endpoint "/d", but after login, endpoint is /login
+	c.Redirect(http.StatusFound, "/")
 }
 
+// ENDPOINT: GET /add_message
+func addMessageGet(c *gin.Context) {
+	c.Redirect(http.StatusFound, "/")
+	//username(c)
+}
+
+// ENDPOINT: GET /metrics
 func metricsHandler() gin.HandlerFunc {
 	h := promhttp.Handler()
 
@@ -237,6 +243,7 @@ func SetupRouter() *gin.Engine {
 	router.POST("/register", register_user)
 	router.GET("/register", register)
 	router.POST("/add_message", addMessage)
+	router.GET("add_message", addMessageGet)
 	router.POST("/login", login_user)
 	router.GET("/login", loginf)
 	router.GET("/logout", logout_user)
