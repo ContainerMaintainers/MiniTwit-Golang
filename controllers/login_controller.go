@@ -76,6 +76,5 @@ func logout_user(c *gin.Context) {
 	//clear session user
 	user = -1
 	
-	//c.String(200, "You were logged out")
 	c.Redirect(http.StatusFound, "/")
 }

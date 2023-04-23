@@ -44,8 +44,6 @@ func usernameFollow(c *gin.Context) { // Adds the current user as follower of th
 			c.Status(400)
 			return
 		}
-		//database.DB.Create(&follow)
-		//c.String(200, fmt.Sprintf("You are now following \"%s\"", username))
 		c.Redirect(http.StatusFound, "/"+username)
 	}
 }
@@ -89,7 +87,6 @@ func usernameUnfollow(c *gin.Context) { // Adds the current user as follower of 
 			return
 		}
 
-		//c.String(200, fmt.Sprintf("You are no longer following \"%s\"", username)) // Had to make it 200 to satisfy tests
 		c.Redirect(http.StatusFound, "/"+username)
 	}
 }

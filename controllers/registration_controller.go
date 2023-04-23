@@ -26,13 +26,9 @@ func checkPasswordHash(username string, enteredPW string) (bool, error) {
 
 	if err := database.DB.Where("username = ?", username).First(&user).Error; err != nil {
 		return false, err
-	}
-
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(enteredPW)); err != nil {
+	} else if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(enteredPW)); err != nil {
 		return false, err
-	}
-
-	if err := database.DB.Where("username = ? AND password = ?", username, user.Password).First(&user).Error; err != nil {
+	} else if err := database.DB.Where("username = ? AND password = ?", username, user.Password).First(&user).Error; err != nil {
 		return false, err
 	}
 
@@ -111,7 +107,6 @@ func register_user(c *gin.Context) {
 			return
 		}
 
-		//c.String(200, "You were successfully registered and can login now")
 		location := url.URL{Path: "/login"}
 		c.Redirect(http.StatusFound, location.RequestURI())
 
@@ -119,4 +114,3 @@ func register_user(c *gin.Context) {
 		c.String(400, error)
 	}
 }
-
