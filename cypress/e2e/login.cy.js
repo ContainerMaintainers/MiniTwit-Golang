@@ -60,7 +60,7 @@ describe('Login user logs in', () => {
         // ---------------- TEST ---------------- //
         
         // check that the page contains text which appears for logged in users
-        cy.contains('You were logged in')
+        cy.url().should('contain', '/'+username)
 
         // ---------------- CLEANUP ---------------- //
 
