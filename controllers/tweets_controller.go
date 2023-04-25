@@ -110,50 +110,9 @@ func AddMessage(c *gin.Context) { // Registers a new message for the user.
 	})
 }
 
-// ENDPOINT: GET /metrics
-func metricsHandler() gin.HandlerFunc {
-	h := promhttp.Handler()
-
-	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
-	}
-}
-
 // ENDPOINT: GET /ping
 func ping(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "pong",
 	})
-}
-
-func SetupRouter() *gin.Engine {
-
-	router := gin.Default()
-	router.LoadHTMLGlob("templates/*")
-	router.Static("/static", "./static/")
-
-	router.GET("/metrics", metricsHandler())
-	router.GET("/ping", ping)
-	router.GET("/", timeline)
-	router.GET("/public", public)
-	router.GET("/:username", username)
-	router.GET("/:username/follow", usernameFollow)
-	router.GET("/:username/unfollow", usernameUnfollow)
-	router.POST("/register", register_user)
-	router.GET("/register", register)
-	router.POST("/add_message", addMessage)
-	router.POST("/login", login_user)
-	router.GET("/login", loginf)
-	router.GET("/logout", logout_user)
-
-	router.GET("/sim/latest", simLatest)
-	router.POST("/sim/register", simRegister)
-	router.GET("/sim/msgs", simMsgs)
-	router.POST("/sim/msgs/:username", simPostUserMsg)
-	router.GET("/sim/msgs/:username", simGetUserMsg)
-	router.POST("/sim/fllws/:username", simPostUserFllws)
-	router.GET("/sim/fllws/:username", simGetUserFllws)
-
-	return router
-
 }
