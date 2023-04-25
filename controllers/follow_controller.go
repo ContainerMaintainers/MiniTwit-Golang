@@ -2,16 +2,18 @@ package controllers
 
 import (
 	//"fmt"
+	"log"
+	"net/http"
+
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
 	"github.com/gin-gonic/gin"
-	"log"
-	"net/http"
 )
 
 var (
-	latest = 0
-	user   = -1
+	latest    = 0
+	user      = -1
+	user_name = ""
 )
 
 // ENDPOINT: GET /:username/follow
@@ -34,7 +36,7 @@ func usernameFollow(c *gin.Context) { // Adds the current user as follower of th
 		}
 
 		follow := entities.Follower{
-			Who_ID:  who, 
+			Who_ID:  who,
 			Whom_ID: whom,
 		}
 
@@ -76,7 +78,7 @@ func usernameUnfollow(c *gin.Context) { // Adds the current user as follower of 
 		}
 
 		unfollow := entities.Follower{
-			Who_ID:  who, 
+			Who_ID:  who,
 			Whom_ID: whom,
 		}
 
