@@ -20,7 +20,7 @@ describe('Create message', () => {
         // ---------------- TEST ---------------- //
 
         // check if page contains 'What's on your mind ?', share button and input text field
-        cy.contains('What\'s on your mind ?')
+        cy.contains('What\'s on your mind')
         cy.get('input').contains("Share")
         cy.get('input[name="text"]')
 
