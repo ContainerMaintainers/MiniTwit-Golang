@@ -8,7 +8,7 @@ import (
 )
 
 // ENDPOINT: GET /
-func timeline(c *gin.Context) {
+func Timeline(c *gin.Context) {
 
 	// if there is NO session user, show public timeline
 	if user == -1 {
@@ -26,7 +26,7 @@ func timeline(c *gin.Context) {
 }
 
 // ENDPOINT: GET /public
-func public(c *gin.Context) {
+func Public(c *gin.Context) {
 
 	if user == -1 {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
@@ -43,7 +43,7 @@ func public(c *gin.Context) {
 }
 
 // ENDPOINT: GET /:username
-func username(c *gin.Context) { // Displays an individual's timeline
+func Username(c *gin.Context) { // Displays an individual's timeline
 
 	username := c.Param("username") // gets the <username> from the url
 	userID, err := getUserId(username)

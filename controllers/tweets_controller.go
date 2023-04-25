@@ -111,7 +111,7 @@ func AddMessage(c *gin.Context) { // Registers a new message for the user.
 }
 
 // ENDPOINT: GET /ping
-func ping(c *gin.Context) {
+func Ping(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "pong",
 	})

@@ -36,7 +36,7 @@ func checkPasswordHash(username string, enteredPW string) (bool, error) {
 }
 
 // ENDPOINT: GET /register
-func register(c *gin.Context) {
+func Register(c *gin.Context) {
 	c.HTML(http.StatusOK, "register.html", gin.H{
 		"messages": "register page",
 	})
@@ -75,7 +75,7 @@ func ValidRegistration(c *gin.Context, username string, email string, password1 
 }
 
 // ENDPOINT: POST /register
-func register_user(c *gin.Context) {
+func Register_user(c *gin.Context) {
 
 	var body struct {
 		Username  string `form:"username" json:"username"`
