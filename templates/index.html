@@ -11,7 +11,11 @@
 </head>
 <link rel=stylesheet type=text/css href="../static/style.css">
 <div class=page>
+{{ if .user }}  
+  <h1>🐥 MiniTwit</h1>
+{{ else }}
   <h1>🐣 MiniTwit</h1>
+{{ end }}
   <div class=navigation>
   {{ if .user }}  
     <a href="/timeline">my timeline</a>
