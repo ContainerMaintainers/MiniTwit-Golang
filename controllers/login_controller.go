@@ -32,7 +32,7 @@ func valid_login(c *gin.Context, message string, user int, username string) bool
 }
 
 // ENDPOINT: POST /login
-func login_user(c *gin.Context) { //Logs the user in.
+func Login_user(c *gin.Context) { //Logs the user in.
 
 	var body struct {
 		Username string `form:"username" json:"username"`
@@ -67,14 +67,14 @@ func login_user(c *gin.Context) { //Logs the user in.
 }
 
 // ENDPOINT: GET /login
-func loginf(c *gin.Context) {
+func Loginf(c *gin.Context) {
 	c.HTML(http.StatusOK, "login.html", gin.H{
 		"messages": "Login page",
 	})
 }
 
 // ENDPOINT: GET /logout
-func logout_user(c *gin.Context) {
+func Logout_user(c *gin.Context) {
 	//clear session user
 	user = -1
 

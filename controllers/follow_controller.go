@@ -17,7 +17,7 @@ var (
 )
 
 // ENDPOINT: GET /:username/follow
-func usernameFollow(c *gin.Context) { // Adds the current user as follower of the given user
+func UsernameFollow(c *gin.Context) { // Adds the current user as follower of the given user
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
@@ -61,7 +61,7 @@ func GetFollower(follower uint, following uint) bool {
 }
 
 // ENDPOINT: GET /:username/unfollow
-func usernameUnfollow(c *gin.Context) { // Adds the current user as follower of the given user
+func UsernameUnfollow(c *gin.Context) { // Adds the current user as follower of the given user
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
