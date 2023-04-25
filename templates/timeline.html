@@ -14,7 +14,7 @@
   <h1>🐣 MiniTwit</h1>
   <div class=navigation>
   {{ if .user }}  
-    <a href="/">my timeline</a>
+    <a href="/{{ .username }}">my timeline</a>
     <a href="/public">public timeline</a>
     <a href="/logout">sign out</a>
     {{ else }}

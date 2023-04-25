@@ -3,6 +3,7 @@ package controllers
 import (
 	"log"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,6 +20,7 @@ func timeline(c *gin.Context) {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
 			"messages": GetMessages("myTimeline", user, 0),
 			"user":     user,
+			"username": user_name,
 		})
 	}
 }
@@ -32,11 +34,10 @@ func public(c *gin.Context) {
 		})
 	} else {
 		// if there exists a session user, show my timeline
-		username := c.Param("username")
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
 			"messages": GetMessages("public", user, 0),
 			"user":     user,
-			"username": username,
+			"username": user_name,
 		})
 	}
 }

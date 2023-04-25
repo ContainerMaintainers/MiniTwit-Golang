@@ -2,9 +2,10 @@ package controllers
 
 import (
 	//"fmt"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 // login helper function
@@ -15,7 +16,7 @@ func valid_login(c *gin.Context, message string, user int, username string) bool
 			"error": "Invalid Username",
 		})
 		return false
-	} else if message == "Invalid password"  {
+	} else if message == "Invalid password" {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Invalid password")
 		c.HTML(http.StatusOK, "login.html", gin.H{
 			"error": "Invalid password",
@@ -23,10 +24,11 @@ func valid_login(c *gin.Context, message string, user int, username string) bool
 		return false
 	} else if message == "You are logged in!" {
 		// if valid login, direct to user's timeline "/username"
+		user_name = username
 		c.Redirect(http.StatusFound, "/"+username)
 	}
 	return true
-	
+
 }
 
 // ENDPOINT: POST /login
@@ -61,7 +63,7 @@ func login_user(c *gin.Context) { //Logs the user in.
 			user = int(userID)
 			valid_login(c, "You are logged in!", user, body.Username)
 		}
-	}	
+	}
 }
 
 // ENDPOINT: GET /login
@@ -75,6 +77,6 @@ func loginf(c *gin.Context) {
 func logout_user(c *gin.Context) {
 	//clear session user
 	user = -1
-	
+
 	c.Redirect(http.StatusFound, "/")
 }
