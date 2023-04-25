@@ -74,7 +74,7 @@ func Loginf(c *gin.Context) {
 }
 
 // ENDPOINT: GET /logout
-func logout_user(c *gin.Context) {
+func Logout_user(c *gin.Context) {
 	//clear session user
 	user = -1
 
