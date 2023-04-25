@@ -7,9 +7,9 @@ import (
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
-	"github.com/gin-gonic/gin"
 
-    "github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/monitoring"
+	"github.com/gin-gonic/gin"
 )
 
 const Per_page int = 30
@@ -19,6 +19,7 @@ type JoinedMessage struct {
 	Username  string
 	Text      string
 	Pub_Date  uint
+	FormattedDate string // new variable to hold the formatted date string
 }
 
 func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
@@ -32,6 +33,7 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 			Joins("left join users on users.id = messages.Author_id").
 			Offset(pagenum * Per_page).
 			Limit(Per_page).
+			Order("messages.Pub_Date desc").
 			Scan(&joinedMessages)
 
 	} else if timelineType == "myTimeline" {
@@ -43,6 +45,7 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 			Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
 			Offset(pagenum * Per_page).
 			Limit(Per_page).
+			Order("messages.Pub_Date desc").
 			Scan(&joinedMessages)
 
 	} else if timelineType == "individual" {
@@ -53,121 +56,22 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 			Where("messages.flagged = ? AND (messages.author_id = ?)", false, user).
 			Offset(pagenum * Per_page).
 			Limit(Per_page).
+			Order("messages.Pub_Date desc").
 			Scan(&joinedMessages)
+	}
 
+	for i := range joinedMessages {
+		timestamp := time.Unix(int64(joinedMessages[i].Pub_Date), 0)
+		joinedMessages[i].FormattedDate = timestamp.Format("Jan 02, 2006 3:04pm")
 	}
 
 	return joinedMessages
-
-}
-
-// ENDPOINT: GET /ping
-func ping(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
-}
-
-// ENDPOINT: GET /
-func timeline(c *gin.Context) {
-
-	// if there is NO session user, show public timeline
-	if user == -1 {
-		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("public", user, 0),
-		})
-	} else {
-		// if there exists a session user, show my timeline
-		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("myTimeline", user, 0),
-			"user":     user,
-		})
-	}
-}
-
-// ENDPOINT: GET /public
-func public(c *gin.Context) {
-
-	if user == -1 {
-		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("public", user, 0),
-		})
-	} else {
-		// if there exists a session user, show my timeline
-		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("public", user, 0),
-			"user":     user,
-		})
-	}
-}
-
-// ENDPOINT: GET /:username
-func username(c *gin.Context) { // Displays an individual's timeline
-
-	username := c.Param("username") // gets the <username> from the url
-	userID, err := getUserId(username)
-	if err != nil {
-		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
-		c.Status(404)
-		return
-	}
-	// if endpoint is a username
-	if username != "" {
-		// if logged in
-		if user != -1 {
-			followed := GetFollower(uint(userID), uint(user))
-			var users_page = false
-			// If logged in user == endpoint
-			if user == int(userID) {
-				users_page = true
-
-				c.HTML(http.StatusOK, "timeline.html", gin.H{
-					"title":     "My Timeline",
-					"user":      user,
-					"private":   true,
-					"user_page": true,
-					"messages":  GetMessages("myTimeline", user, 0),
-				})
-			} else {
-				// If following
-				if followed == true {
-					// If logged in and user != endpoint
-					c.HTML(http.StatusOK, "timeline.html", gin.H{
-						"title":         username + "'s Timeline",
-						"user_timeline": true,
-						"private":       true,
-						"user":          username,
-						"followed":      followed,
-						"user_page":     users_page,
-						"messages":      GetMessages("individual", int(userID), 0),
-					})
-				} else {
-					// If not following
-					// If logged in and user != endpoint
-					c.HTML(http.StatusOK, "timeline.html", gin.H{
-						"title":         username + "'s Timeline",
-						"user_timeline": true,
-						"private":       true,
-						"user":          username,
-						"user_page":     users_page,
-						"messages":      GetMessages("individual", int(userID), 0),
-					})
-				}
-			}
-		} else {
-			// If not logged in
-			c.HTML(http.StatusOK, "timeline.html", gin.H{
-				"title":         username + "'s Timeline",
-				"user_timeline": true,
-				"private":       true,
-				"messages":      GetMessages("individual", int(userID), 0),
-			})
-		}
-	}
 }
 
 // ENDPOINT: POST /add_message
-func addMessage(c *gin.Context) { // Registers a new message for the user.
+func AddMessage(c *gin.Context) { // Registers a new message for the user.
+
+	monitoring.CountEndpoint("/add_message", "POST")
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
@@ -194,47 +98,21 @@ func addMessage(c *gin.Context) { // Registers a new message for the user.
 		c.Status(400)
 		return
 	}
-
-	c.Redirect(http.StatusFound, "/")
-
+	
+	username := c.Param("username") // gets the <username> from the url
+	c.HTML(http.StatusOK, "timeline.html", gin.H{
+		"title":     "My Timeline",
+		"user":      user,
+		"private":   true,
+		"user_page": true,
+		"messages":  GetMessages("myTimeline", user, 0),
+		"username":  username,
+	})
 }
 
-func metricsHandler() gin.HandlerFunc {
-	h := promhttp.Handler()
-
-	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
-	}
-}
-
-func SetupRouter() *gin.Engine {
-
-	router := gin.Default()
-	router.LoadHTMLGlob("templates/*")
-	router.Static("/static", "./static/")
-
-	router.GET("/metrics", metricsHandler())
-	router.GET("/ping", ping)
-	router.GET("/", timeline)
-	router.GET("/public", public)
-	router.GET("/:username", username)
-	router.GET("/:username/follow", usernameFollow)
-	router.GET("/:username/unfollow", usernameUnfollow)
-	router.POST("/register", register_user)
-	router.GET("/register", register)
-	router.POST("/add_message", addMessage)
-	router.POST("/login", login_user)
-	router.GET("/login", loginf)
-	router.GET("/logout", logout_user)
-
-	router.GET("/sim/latest", simLatest)
-	router.POST("/sim/register", simRegister)
-	router.GET("/sim/msgs", simMsgs)
-	router.POST("/sim/msgs/:username", simPostUserMsg)
-	router.GET("/sim/msgs/:username", simGetUserMsg)
-	router.POST("/sim/fllws/:username", simPostUserFllws)
-	router.GET("/sim/fllws/:username", simGetUserFllws)
-
-	return router
-
+// ENDPOINT: GET /ping
+func Ping(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "pong",
+	})
 }

@@ -1,6 +1,9 @@
 <!doctype html>
 <head>
-  <title>Welcome | MiniTwit</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;800&display=swap');
+  </style>
+  <title>Timeline | MiniTwit</title>
   <link rel="apple-touch-icon" sizes="180x180" href="../static/favicon_io/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../static/favicon_io/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../static/favicon_io/favicon-16x16.png">
@@ -8,15 +11,19 @@
 </head>
 <link rel=stylesheet type=text/css href="../static/style.css">
 <div class=page>
-  <h1>MiniTwit</h1>
+{{ if .user }}  
+  <h1>🐥 MiniTwit</h1>
+{{ else }}
+  <h1>🐣 MiniTwit</h1>
+{{ end }}
   <div class=navigation>
   {{ if .user }}  
-    <a href="/">my timeline</a> |
-    <a href="/public">public timeline</a> |
+    <a href="/{{ .username }}">my timeline</a>
+    <a href="/public">public timeline</a>
     <a href="/logout">sign out</a>
     {{ else }}
-    <a href="/public">public timeline</a> |
-    <a href="/register">sign up</a> |
+    <a href="/public">public timeline</a>
+    <a href="/register">sign up</a>
     <a href="/login">sign in</a>
   {{ end }}
   </div>
@@ -55,7 +62,7 @@
       <li><img src="http://www.gravatar.com/avatar/{{ .Author_id }}?d=identicon&amp;s=48"><p>
         <strong><a href="/{{ .Username }}">{{ .Username }}</a></strong>
         {{ .Text }}
-        <small>&mdash; {{ .Pub_Date }}</small>
+        <small>&mdash; {{ .FormattedDate }}</small>
     {{ else }}
       <li><em>There's no message so far.</em>
     {{ end }}

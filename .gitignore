@@ -4,3 +4,7 @@ __pycache__
 .pytest_cache
 .vagrant/
 db_ip.txt
+node_modules
+cypress/screenshots
+cypress/videos
+prometheus

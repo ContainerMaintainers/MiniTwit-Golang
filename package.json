@@ -1,0 +1,25 @@
+{
+  "name": "minitwit-golang",
+  "version": "1.0.0",
+  "description": "A go refactor of the minitwit application",
+  "main": "minitwit.go",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ContainerMaintainers/MiniTwit-Golang.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ContainerMaintainers/MiniTwit-Golang/issues"
+  },
+  "homepage": "https://github.com/ContainerMaintainers/MiniTwit-Golang#readme",
+  "devDependencies": {
+    "cypress": "^12.8.1"
+  },
+  "dependencies": {
+    "uid": "^2.0.1"
+  }
+}

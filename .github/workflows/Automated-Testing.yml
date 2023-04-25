@@ -1,0 +1,41 @@
+name: Minitwit Automated Testing
+
+on:
+  push:
+    branches:
+      - development
+  workflow_run:
+    workflows:
+      - "Automated Testing"
+    types:
+      - completed
+    branches:
+      - development
+
+jobs:
+  cypress-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+    
+      - name: Create .env
+        run: |
+          touch .env
+          echo SESSION_KEY="${{ secrets.SESSION_KEY }}" >> .env
+          echo GIN_MODE="${{ vars.GIN_MODE }}" >> .env
+          echo PORT="${{ vars.PORT }}" >> .env
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.19
+        
+      - name: Run minitwit
+        run: go run minitwit.go -t &
+    
+      - name: Cypress run
+        uses: cypress-io/github-action@v5.5.1
+        with:
+          wait-on: 'http://localhost:8080'
