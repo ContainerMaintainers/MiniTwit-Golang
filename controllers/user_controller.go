@@ -111,9 +111,9 @@ func valid_login(c *gin.Context, message string, user int) bool {
 			"error": "Invalid password",
 		})
 		return false
-	} else if message == "You were logged in" {
+	} else if message == "You are logged in!" {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"title":     "My Timeline ONE",
+			"title":     "My Timeline",
 			"flashes":	 message,
 			"user":      user,
 			"private":   true,
@@ -156,7 +156,7 @@ func login_user(c *gin.Context) { //Logs the user in.
 		} else {
 			// set session user
 			user = int(userID)
-			valid_login(c, "You were logged in", user)
+			valid_login(c, "You are logged in!", user)
 		}
 	}	
 }
