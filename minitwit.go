@@ -5,7 +5,6 @@ import (
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/controllers"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/monitoring"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
@@ -17,10 +16,6 @@ var (
 	testFlag = flag.Bool("t", false, "Whether or not to use test database")
 	user     = -1
 )
-
-func init() {
-	initializers.LoadEnvVars()
-}
 
 func metricsHandler() gin.HandlerFunc {
 	reg := prometheus.NewRegistry()
