@@ -7,9 +7,9 @@ import (
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
-	"github.com/gin-gonic/gin"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/monitoring"
+	"github.com/gin-gonic/gin"
 )
 
 const Per_page int = 30
@@ -69,7 +69,9 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 }
 
 // ENDPOINT: POST /add_message
-func addMessage(c *gin.Context) { // Registers a new message for the user.
+func AddMessage(c *gin.Context) { // Registers a new message for the user.
+
+	monitoring.CountEndpoint("/add_message", "POST")
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
