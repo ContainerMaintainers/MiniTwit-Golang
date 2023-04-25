@@ -129,7 +129,10 @@ Vagrant.configure("2") do |config|
       docker build -t $DOCKER_USERNAME/minitwit:latest --build-arg db_user=$DB_USER --build-arg db_host=$DB_HOST --build-arg db_password=$DB_PASSWORD --build-arg db_name=$DB_NAME --build-arg db_port=$DB_PORT --build-arg port=$PORT --build-arg session_key=$SESSION_KEY --build-arg gin_mode=$GIN_MODE .
 
       echo "Logging into docker"
-      docker login --username $DOCKER_USERNAME --pasword $DOCKER_PASSWORD
+      docker login --username $DOCKER_USERNAME --pasword $DOCKER_PASSWORD¨
+
+      echo "Installing loki-docker-driver"
+      docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
 
       echo "Running docker image..."
       docker run --rm -d -p $PORT:$PORT --name minitwit $DOCKER_USERNAME/minitwit:latest
@@ -142,6 +145,66 @@ Vagrant.configure("2") do |config|
       echo "http://${THIS_IP}:8080"
     SHELL
   end
+  
+  config.vm.define "monitoring", primary: true do |server|
+    server.vm.provider :digital_ocean do |provider|
+      provider.ssh_key_name = ENV["SSH_KEY_NAME"]
+      provider.token = ENV["DIGITAL_OCEAN_TOKEN"]
+      provider.image = 'ubuntu-18-04-x64'
+      provider.region = 'fra1'
+      provider.size = 's-1vcpu-1gb'
+      provider.privatenetworking = true
+    end
+
+    server.vm.hostname = "monitoring"
+
+    server.vm.provision "shell", inline: <<-SHELL
+
+      cp -r /vagrant/* $HOME
+
+      echo "Installing docker..."
+      sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+      apt-cache policy docker-ce
+      sudo apt install -y docker-ce
+      sudo systemctl status docker
+      sudo usermod -aG docker ${USER}
+
+      echo "Verifying that docker works"
+      docker run --rm hello-world
+      docker rmi hello-world  
+    
+      echo "Installing loki"
+      docker pull grafana/loki
+
+      echo "Installing prometheus"
+      docker pull prom/prometheus
+
+      echo "Installing grafana"
+      docker pull grafana/grafana:9.4.7
+
+      echo "Removing grafana"
+      docker stop grafana && docker rm -f grafana
+
+      echo "Removing loki"
+      docker stop loki && docker rm -f loki
+      
+      echo "Removing prometheus"
+      docker stop prometheus && docker rm -f prometheus
+
+      echo "Running prometheus"
+      docker run -d -p 9090:9090 -u $(id -u) -v ./prometheus.yml:/etc/prometheus/prometheus.yml -v /prometheus:/prometheus --name prometheus prom/prometheus
+
+      echo "Running grafana"
+      docker run -d -p 3000:3000 --name grafana grafana/grafana:9.4.7
+
+      echo "Running loki"
+      docker run -d --name=loki --mount source=loki-data,target=/loki -p 3100:3100 grafana/loki
+
+   SHELL
+  end
+
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
     sudo apt-get update
   SHELL
