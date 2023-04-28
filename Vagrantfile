@@ -132,7 +132,7 @@ Vagrant.configure("2") do |config|
       docker login --username $DOCKER_USERNAME --pasword $DOCKER_PASSWORD¨
 
       echo "Installing loki-docker-driver"
-      docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+      docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions || true
 
       echo "Running docker image..."
       docker run --rm -d -p $PORT:$PORT --name minitwit $DOCKER_USERNAME/minitwit:latest
@@ -185,13 +185,13 @@ Vagrant.configure("2") do |config|
       docker pull grafana/grafana:9.4.7
 
       echo "Removing grafana"
-      docker stop grafana && docker rm -f grafana
+      docker stop grafana || true && docker rm -f grafana || true
 
       echo "Removing loki"
-      docker stop loki && docker rm -f loki
+      docker stop loki || true && docker rm -f loki || true
       
       echo "Removing prometheus"
-      docker stop prometheus && docker rm -f prometheus
+      docker stop prometheus || true && docker rm -f prometheus || true
 
       echo "Running prometheus"
       docker run -d -p 9090:9090 -u $(id -u) -v ./prometheus.yml:/etc/prometheus/prometheus.yml -v /prometheus:/prometheus --name prometheus prom/prometheus

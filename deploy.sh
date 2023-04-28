@@ -13,10 +13,12 @@
 # $10 : Loki host
 # $11 : Loki port
 
+echo "Installing loki driver"
+docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions || true
 echo "Pulling latest version"
 docker pull $1/minitwit:latest
 echo "Stopping current minitwit"
-docker stop minitwit
+docker stop minitwit || true
 echo "Deploying $DOCKER_USERNAME/minitwit:latest to $PORT"
 docker run -d \
 	-p $2:$2 \
