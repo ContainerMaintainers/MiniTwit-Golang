@@ -38,15 +38,6 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/minitwit:latest
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/minitwit:webbuildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/minitwit:webbuildcache,mode=max
-          build-args: |
-            db_name=${{  secrets.DB_NAME  }}
-            db_port=${{  secrets.DB_PORT  }}
-            db_password=${{  secrets.DB_PASSWORD  }}
-            db_user=${{  secrets.DB_USER  }}
-            db_host=${{  secrets.DB_HOST  }}
-            session_key=${{  secrets.SESSION_KEY  }}
-            port=${{  vars.PORT  }}
-            gin_mode=${{  vars.GIN_MODE  }}
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.8
@@ -54,4 +45,4 @@ jobs:
             host: ${{  secrets.SSH_HOST }}
             username: ${{  secrets.SSH_USER }}
             key: ${{  secrets.SSH_KEY }}
-            script: bash deploy.sh containermaintainers ${{  vars.PORT  }}
+            script: bash deploy.sh containermaintainers ${{  vars.PORT  }} ${{  secrets.DB_NAME  }} ${{  secrets.DB_PORT  }} ${{  secrets.DB_PASSWORD  }} ${{  secrets.DB_USER  }} ${{  secrets.DB_HOST  }} ${{  secrets.SESSION_KEY  }} ${{  vars.GIN_MODE  }} ${{ secrets.LOKI_USER }} ${{ secrets.LOKI_PASSWORD }} ${{ secrets.LOKI_HOST }}  ${{ vars.LOKI_PORT }}
