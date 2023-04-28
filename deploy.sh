@@ -8,10 +8,12 @@
 # $5 : Database password
 # $6 : Database user
 # $7 : Database host
-# $8 : Loki username
-# $9 : Loki password
-# $10 : Loki host
-# $11 : Loki port
+# $8 : Session key
+# $9 : Gin mode
+# $10 : Loki username
+# $11 : Loki password
+# $12 : Loki host
+# $13 : Loki port
 
 echo "Installing loki driver"
 docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions || true
@@ -28,9 +30,11 @@ docker run -d \
     --env DB_PASSWORD=$5 \
 	--env DB_USER=$6 \
 	--env DB_HOST=$7 \
+    --env SESSION_KEY=$8 \
+	--env GIN_MODE=$9 \
 	--name minitwit \
 	--log-driver=loki \
-    --log-opt loki-url="http://${8}:${9}@${10}:${11}/loki/api/v1/push" \
+    --log-opt loki-url="http://${10}:${11}@${12}:${13}/loki/api/v1/push" \
     --log-opt loki-retries=5 \
     --log-opt loki-batch-size=400 \
     --name minitwit \
