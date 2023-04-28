@@ -30,7 +30,7 @@ docker run -d \
 	--env DB_HOST=$7 \
 	--name minitwit \
 	--log-driver=loki \
-    --log-opt loki-url="https://${8}:${9}@${10}:${11}/loki/api/v1/push" \
+    --log-opt loki-url="http://${8}:${9}@${10}:${11}/loki/api/v1/push" \
     --log-opt loki-retries=5 \
     --log-opt loki-batch-size=400 \
     --name minitwit \
