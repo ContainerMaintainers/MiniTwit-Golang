@@ -73,3 +73,10 @@ services:
       - "3000:3000"  
     networks:
       - main
+  
+  loki:
+    image: grafana/loki:2.8.0
+    ports:
+      - "3100:3100"
+    networks:
+      - main
