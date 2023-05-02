@@ -45,4 +45,4 @@ jobs:
             host: ${{  secrets.SSH_HOST }}
             username: ${{  secrets.SSH_USER }}
             key: ${{  secrets.SSH_KEY }}
-            script: bash deploy.sh containermaintainers ${{  vars.PORT  }} ${{  secrets.DB_NAME  }} ${{  secrets.DB_PORT  }} ${{  secrets.DB_PASSWORD  }} ${{  secrets.DB_USER  }} ${{  secrets.DB_HOST  }} ${{  secrets.SESSION_KEY  }} ${{  vars.GIN_MODE  }}
+            script: bash deploy.sh containermaintainers ${{  vars.PORT  }} ${{  secrets.DB_NAME  }} ${{  secrets.DB_PORT  }} ${{  secrets.DB_PASSWORD  }} ${{  secrets.DB_USER  }} ${{  secrets.DB_HOST  }} ${{  secrets.SESSION_KEY  }} ${{  vars.GIN_MODE  }} ${{ secrets.LOKI_USER }} ${{ secrets.LOKI_PASSWORD }} ${{ secrets.LOKI_HOST }}  ${{ vars.LOKI_PORT }}
