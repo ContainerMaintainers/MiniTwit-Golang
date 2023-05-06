@@ -8,7 +8,7 @@ import (
 )
 
 // ENDPOINT: GET /public
-func Public(c *gin.Context) {
+func Timeline(c *gin.Context) {
 	page := c.DefaultQuery("page", "0")
 
 	if user == -1 {
@@ -26,7 +26,7 @@ func Public(c *gin.Context) {
 }
 
 // ENDPOINT: GET /:username
-func Username(c *gin.Context) { // Displays an individual's timeline
+func UserTimeline(c *gin.Context) { // Displays an individual's timeline
 
 	username := c.Param("username") // gets the <username> from the url
 	userID, err := getUserId(username)

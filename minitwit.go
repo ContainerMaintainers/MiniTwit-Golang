@@ -36,9 +36,9 @@ func SetupRouter() *gin.Engine {
 
 	router.GET("/metrics", metricsHandler())
 	router.GET("/ping", controllers.Ping)
-	//router.GET("/", controllers.Timeline)
-	router.GET("/public", controllers.Public)
-	router.GET("/:username", controllers.Username)
+	router.GET("/", controllers.Timeline)
+	router.GET("/public", controllers.Timeline)
+	router.GET("/:username", controllers.UserTimeline)
 	router.GET("/:username/follow", controllers.UsernameFollow)
 	router.GET("/:username/unfollow", controllers.UsernameUnfollow)
 	router.POST("/register", controllers.Register_user)
