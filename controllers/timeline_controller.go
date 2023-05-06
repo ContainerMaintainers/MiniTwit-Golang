@@ -10,15 +10,17 @@ import (
 // ENDPOINT: GET /
 func Timeline(c *gin.Context) {
 
+	page := c.DefaultQuery("page", "0")
+	
 	// if there is NO session user, show public timeline
 	if user == -1 {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("public", user, 0),
+			"messages": GetMessages("public", user, page),
 		})
 	} else {
 		// if there exists a session user, show my timeline
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("myTimeline", user, 0),
+			"messages": GetMessages("myTimeline", user, page),
 			"user":     user,
 			"username": user_name,
 		})
@@ -27,15 +29,16 @@ func Timeline(c *gin.Context) {
 
 // ENDPOINT: GET /public
 func Public(c *gin.Context) {
+	page := c.DefaultQuery("page", "0")
 
 	if user == -1 {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("public", user, 0),
+			"messages": GetMessages("public", user, page),
 		})
 	} else {
 		// if there exists a session user, show my timeline
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("public", user, 0),
+			"messages": GetMessages("public", user, page),
 			"user":     user,
 			"username": user_name,
 		})
@@ -47,6 +50,8 @@ func Username(c *gin.Context) { // Displays an individual's timeline
 
 	username := c.Param("username") // gets the <username> from the url
 	userID, err := getUserId(username)
+	page := c.DefaultQuery("page", "0")
+
 	if err != nil {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")
 		c.Status(404)
@@ -67,7 +72,7 @@ func Username(c *gin.Context) { // Displays an individual's timeline
 					"user":      user,
 					"private":   true,
 					"user_page": true,
-					"messages":  GetMessages("myTimeline", user, 0),
+					"messages":  GetMessages("myTimeline", user, page),
 					"username":  username,
 				})
 			} else {
@@ -81,7 +86,7 @@ func Username(c *gin.Context) { // Displays an individual's timeline
 						"user":          username,
 						"followed":      followed,
 						"user_page":     users_page,
-						"messages":      GetMessages("individual", int(userID), 0),
+						"messages":      GetMessages("individual", int(userID), page),
 					})
 				} else {
 					// If not following
@@ -92,7 +97,7 @@ func Username(c *gin.Context) { // Displays an individual's timeline
 						"private":       true,
 						"user":          username,
 						"user_page":     users_page,
-						"messages":      GetMessages("individual", int(userID), 0),
+						"messages":      GetMessages("individual", int(userID), page),
 					})
 				}
 			}
@@ -102,7 +107,7 @@ func Username(c *gin.Context) { // Displays an individual's timeline
 				"title":         username + "'s Timeline",
 				"user_timeline": true,
 				"private":       true,
-				"messages":      GetMessages("individual", int(userID), 0),
+				"messages":      GetMessages("individual", int(userID), page),
 			})
 		}
 	}
