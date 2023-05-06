@@ -7,26 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ENDPOINT: GET /
-func Timeline(c *gin.Context) {
-
-	page := c.DefaultQuery("page", "0")
-	
-	// if there is NO session user, show public timeline
-	if user == -1 {
-		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("public", user, page),
-		})
-	} else {
-		// if there exists a session user, show my timeline
-		c.HTML(http.StatusOK, "timeline.html", gin.H{
-			"messages": GetMessages("myTimeline", user, page),
-			"user":     user,
-			"username": user_name,
-		})
-	}
-}
-
 // ENDPOINT: GET /public
 func Public(c *gin.Context) {
 	page := c.DefaultQuery("page", "0")
