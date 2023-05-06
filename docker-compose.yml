@@ -42,8 +42,6 @@ services:
       dockerfile: Dockerfile
       args:
         BUILDKIT_PROGRESS: plain docker-compose build
-    ports:
-      - '8080:8080'
     environment:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -59,7 +57,9 @@ services:
     networks:
       - main
     labels:
-      - "traefik.http.routers.web.rule=Host(`web.docker.localhost`)"
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`localhost`)"
+      - "traefik.http.routers.whoami.entrypoints=minitwit"
 
   prometheus:
     image: prom/prometheus
@@ -86,16 +86,23 @@ services:
     networks:
       - main
 
-  traefik-reverse-proxy:
-    image: traefik:v2.7
-    container_name: traefik-reverse-proxy
-    # Enable the Web UI and set provider to docker
-    command: --api.insecure=true --providers.docker
+  traefik:
+    image: "traefik:v2.6"
+    command:
+      - "--log.level=DEBUG"
+      # allows accessing a Traefik dashboard - that simplifies debugging, but should be disabled outside of development environments due to security reasons.
+      - "--api.insecure=true"
+      # enables the Docker configuration discovery
+      - "--providers.docker=true"
+      # do not expose Docker services by default
+      - "--providers.docker.exposedbydefault=false"
+      # create an entrypoint called minitwit, listening on port 80
+      - "--entrypoints.minitwit.address=:80"
     ports:
       - "80:80"
-      - "8081:8080" # Web UI Port
+      - "8080:8080"
     volumes:
-      # Listen to the Docker events
-      - /var/run/docker.sock:/var/run/docker.sock
+    # mount the Docker socket into the Traefik container so that it can listen to Docker events and reconfigure itself when containers are started/stopped 
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - main
