@@ -21,6 +21,7 @@ echo "Pulling latest version"
 docker pull $1/minitwit:latest
 echo "Stopping current minitwit"
 docker stop minitwit || true
+docker rm minitwit || true
 echo "Deploying $DOCKER_USERNAME/minitwit:latest to $PORT"
 docker run -d \
 	-p $2:$2 \
