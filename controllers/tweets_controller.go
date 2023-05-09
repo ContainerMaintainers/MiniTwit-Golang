@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"strconv"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
@@ -22,8 +23,22 @@ type JoinedMessage struct {
 	FormattedDate string // new variable to hold the formatted date string
 }
 
-func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
+func LimitMessages(page string) (int, int) {
+	messagesPerPage := 50
+	p, err := strconv.Atoi(page)
+	if err != nil {
+		panic("Failed to parse page number")
+	}
+	offset := (p - 1) * messagesPerPage
+	return offset, messagesPerPage
+}
 
+func GetMessages(timelineType string, user int, page string) []JoinedMessage {
+
+	//offset:= 1
+	//messagesPerPage := 1
+
+	offset, messagesPerPage := LimitMessages(page)
 	var joinedMessages []JoinedMessage
 
 	if timelineType == "public" {
@@ -31,8 +46,7 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 		database.DB.Table("messages").
 			Select("messages.Author_id", "users.Username", "messages.Text", "messages.Pub_Date").
 			Joins("left join users on users.id = messages.Author_id").
-			Offset(pagenum * Per_page).
-			Limit(Per_page).
+			Offset(offset).Limit(messagesPerPage).
 			Order("messages.Pub_Date desc").
 			Scan(&joinedMessages)
 
@@ -43,8 +57,7 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 			Joins("left join followers on messages.author_id = followers.whom_id").
 			Joins("left join users on users.id = messages.Author_id").
 			Where("messages.flagged = ? AND (messages.author_id = ? OR followers.who_id = ?)", false, user, user).
-			Offset(pagenum * Per_page).
-			Limit(Per_page).
+			Offset(offset).Limit(messagesPerPage).
 			Order("messages.Pub_Date desc").
 			Scan(&joinedMessages)
 
@@ -54,8 +67,7 @@ func GetMessages(timelineType string, user int, pagenum int) []JoinedMessage {
 			Select("messages.Author_id", "users.Username", "messages.Text", "messages.Pub_Date").
 			Joins("left join users on users.id = messages.Author_id").
 			Where("messages.flagged = ? AND (messages.author_id = ?)", false, user).
-			Offset(pagenum * Per_page).
-			Limit(Per_page).
+			Offset(offset).Limit(messagesPerPage).
 			Order("messages.Pub_Date desc").
 			Scan(&joinedMessages)
 	}
@@ -105,7 +117,7 @@ func AddMessage(c *gin.Context) { // Registers a new message for the user.
 		"user":      user,
 		"private":   true,
 		"user_page": true,
-		"messages":  GetMessages("myTimeline", user, 0),
+		"messages":  GetMessages("myTimeline", user, "0"),
 		"username":  username,
 	})
 }
