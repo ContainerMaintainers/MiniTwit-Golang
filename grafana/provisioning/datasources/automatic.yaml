@@ -22,18 +22,18 @@ datasources:
   readOnly: false
   editable: true
 - name: Loki
-  type: Loki
+  type: loki
   access: proxy
   url: http://164.92.240.232:3100  # This should be configurable in some way??? The ip address should not be hardcoded
   orgId: 1
-  uid: "TSwyULa4z"
+  uid: "n_Rr2LP4k"
   user: ""
   database: ""
   basicAuth: false
   basicAuthUser:
   basicAuthPassword:
   withCredentials:
-  isDefault: true
+  isDefault: false
   jsonData:
      tlsAuth: false
      tlsAuthWithCACert: false
