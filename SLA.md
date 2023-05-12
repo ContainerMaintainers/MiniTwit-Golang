@@ -7,7 +7,7 @@ This SLA applies to the Minitwit web-service provided by the Service Provider to
 - Downtime: Defined as the time where the Minitwit service returns a status code 500.
 - Uptime: Defined as the time where the Minitwit service is operational and not experiencing downtime.
 - External Factors: Defined as events outside of the Service Provider's control, including but not limited to, acts of nature, acts of terrorism, power failures, or Internet connectivity issues.
-- Scheduled Downtime: Any planned maintenance or upgrades to the Minitwit service that are communicated to the Customer at least 72 hours in advance via email or other forms of electronic communication. The Service Provider will make reasonable efforts to schedule maintenance during off-peak hours and to minimize the duration of any scheduled downtime.
+- Scheduled Downtime: Any planned maintenance or upgrades to the Minitwit service that are communicated to the Customer at least 72 hours in advance via email or other forms of electronic communication.
 
 # Service Level Objective
 The Service Provider guarantees 90% uptime per month for the Minitwit web-service.
@@ -17,9 +17,6 @@ If the Service Provider fails to meet the Service Level Objective during any giv
 
 # Exclusions
 This SLA does not apply in the event of downtime induced by External Factors or Scheduled Downtime.
-
-# Notification of Service Interruption
-In the event of Minitwit service interruption, the Service Provider will notify the Customer via email or other forms of electronic communication within 30 minutes of becoming aware of the service interruption.
 
 # Service Availability Monitoring
 The Service Provider will monitor the availability of the Minitwit service 24 hours a day, 7 days a week.
