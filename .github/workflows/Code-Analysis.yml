@@ -14,9 +14,12 @@ on:
       
 
 jobs:
-  vulnerabilities:
+  shellcheck:
     runs-on: ubuntu-latest
     
     steps:
         - name: Checkout
           uses: actions/checkout@v2
+        
+        - name: ShellCheck
+          uses: ludeeus/action-shellcheck@2.0.0
