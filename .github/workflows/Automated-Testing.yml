@@ -4,13 +4,11 @@ on:
   push:
     branches:
       - development
-  workflow_run:
-    workflows:
-      - "Automated Testing"
-    types:
-      - completed
+      - main
+  pull_request:
     branches:
       - development
+      - main
 
 jobs:
   cypress-test:
