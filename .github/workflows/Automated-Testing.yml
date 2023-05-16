@@ -45,11 +45,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
     
-      - name: Install python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest
-    
+
       - name: Create .env
         run: |
           touch .env
@@ -64,10 +60,16 @@ jobs:
         
       - name: Run minitwit
         run: go run minitwit.go -t &
+        
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
     
-      - name: Sleep for 30 seconds
-        run: sleep 30s
-        shell: bash
+      - name: Site Health Check
+        uses: pchalupa/site-health-check@v1.0.2
+        with:
+          url: 'http://127.0.0.1:8080/'
 
       - name: Run pytest
         run: pytest minitwit_sim_api_test.py
