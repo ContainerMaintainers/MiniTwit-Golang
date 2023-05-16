@@ -70,4 +70,4 @@ jobs:
         shell: bash
 
       - name: Run pytest
-        run: pytest run minitwit_sim_api_test.py
+        run: pytest minitwit_sim_api_test.py
