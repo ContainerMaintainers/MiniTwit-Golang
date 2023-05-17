@@ -36,7 +36,7 @@ func SetupRouter() *gin.Engine {
 
 	router.GET("/metrics", metricsHandler())
 	router.GET("/ping", controllers.Ping)
-	router.GET("/", controllers.Timeline)
+	router.GET("/", controllers.IndexTimeline)
 	router.GET("/public", controllers.Timeline)
 	router.GET("/:username", controllers.UserTimeline)
 	router.GET("/:username/follow", controllers.UsernameFollow)
