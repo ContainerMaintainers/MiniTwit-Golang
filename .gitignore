@@ -16,3 +16,8 @@ terraform/infra.out
 terraform/terraform.tfstate.backup
 terraform/terraform.tfstate
 terraform/secrets
+terraform/.terraform/providers/registry.terraform.io/digitalocean/digitalocean/2.8.0/linux_amd64/CHANGELOG.md
+terraform/.terraform/providers/registry.terraform.io/digitalocean/digitalocean/2.8.0/linux_amd64/LICENSE
+terraform/.terraform/providers/registry.terraform.io/digitalocean/digitalocean/2.8.0/linux_amd64/README.md
+terraform/.terraform/providers/registry.terraform.io/digitalocean/digitalocean/2.8.0/linux_amd64/terraform-provider-digitalocean_v2.8.0
+terraform/.terraform/providers/registry.terraform.io/hashicorp/null/3.1.0/linux_amd64/terraform-provider-null_v3.1.0_x5
