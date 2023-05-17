@@ -8,3 +8,11 @@ node_modules
 cypress/screenshots
 cypress/videos
 prometheus
+terraform/ssh_key/terraform
+terraform/ssh_key/terraform.pub
+terraform/temp/*
+terraform/.terraform.lock.hcl
+terraform/infra.out
+terraform/terraform.tfstate.backup
+terraform/terraform.tfstate
+terraform/secrets
