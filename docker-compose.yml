@@ -72,6 +72,10 @@ services:
 
   grafana:
     image: grafana/grafana:9.4.7
+    container_name: grafana
+    volumes:
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/provisioning:/etc/grafana/provisioning
     ports:
       - "3000:3000"  
     networks:
