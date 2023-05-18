@@ -28,6 +28,11 @@ resource "digitalocean_droplet" "minitwit-swarm-leader" {
     destination = "/root/minitwit_stack.yml"
   }
 
+  provisioner "file" {
+    source = "daemon.json"
+    destination = "/etc/docker/daemon.json"
+  }
+
   provisioner "remote-exec" {
     inline = [
       # allow ports for docker swarm
