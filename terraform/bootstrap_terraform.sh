@@ -12,6 +12,13 @@ echo -e "\n--> Checking that environment variables are set\n"
 [ -z "$STATE_FILE" ] && echo "STATE_FILE is not set" && exit
 [ -z "$AWS_ACCESS_KEY_ID" ] && echo "AWS_ACCESS_KEY_ID is not set" && exit
 [ -z "$AWS_SECRET_ACCESS_KEY" ] && echo "AWS_SECRET_ACCESS_KEY is not set" && exit
+[ -z "$GIN_MODE" ] && echo "GIN_MODE is not set" && exit
+[ -z "$DB_USER" ] && echo "DB_USER is not set" && exit
+[ -z "$DB_PASSWORD" ] && echo "DB_PASSWORD is not set" && exit
+[ -z "$DB_NAME" ] && echo "DB_NAME is not set" && exit
+[ -z "$DB_PORT" ] && echo "DB_PORT is not set" && exit
+[ -z "$SESSION_KEY" ] && echo "SESSION_KEY is not set" && exit
+
 
 echo -e "\n--> Initializing terraform\n"
 # initialize terraform
@@ -43,7 +50,7 @@ ssh \
     -o 'StrictHostKeyChecking no' \
     root@$(terraform output -raw minitwit-swarm-leader-ip-address) \
     -i ssh_key/terraform \
-    'docker stack deploy minitwit -c minitwit_stack.yml'
+    'DB_NAME=$DB_NAME DB_USER=$DB_USER DB_PASSWORD=$DB_PASSWORD DB_PORT=$DB_PORT SESSION_KEY=$SESSION_KEY GIN_MODE=${GIN_MODE} docker stack deploy minitwit -c minitwit_stack.yml'
 
 echo -e "\n--> Done bootstrapping Minitwit"
 echo -e "--> The dbs will need a moment to initialize, this can take up to a couple of minutes..."

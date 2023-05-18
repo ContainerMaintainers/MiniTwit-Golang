@@ -10,9 +10,9 @@ services:
     image: postgres
     restart: always
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=minitwitdb
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
     ports:
       - '5432:5432'
     healthcheck:
@@ -41,14 +41,14 @@ services:
       - '8080:8080'
     restart: always
     environment:
-      - DB_NAME=minitwitdb
-      - DB_PORT=5432
-      - DB_PASSWORD=admin
-      - DB_USER=admin
-      - DB_HOST=postgres
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_USER=${DB_USER}
+      - DB_HOST=main
       - PORT=8080
-      - SESSION_KEY=session123
-      - GIN_MODE=debug
+      - SESSION_KEY=${SESSION_KEY}
+      - GIN_MODE=${GIN_MODE}
     links:
       - postgres:database
     networks:
