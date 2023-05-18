@@ -5,7 +5,6 @@ import (
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/controllers"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/initializers"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/monitoring"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
@@ -17,10 +16,6 @@ var (
 	testFlag = flag.Bool("t", false, "Whether or not to use test database")
 	user     = -1
 )
-
-func init() {
-	initializers.LoadEnvVars()
-}
 
 func metricsHandler() gin.HandlerFunc {
 	reg := prometheus.NewRegistry()
@@ -41,9 +36,9 @@ func SetupRouter() *gin.Engine {
 
 	router.GET("/metrics", metricsHandler())
 	router.GET("/ping", controllers.Ping)
-	router.GET("/", controllers.Timeline)
-	router.GET("/public", controllers.Public)
-	router.GET("/:username", controllers.Username)
+	router.GET("/", controllers.IndexTimeline)
+	router.GET("/public", controllers.Timeline)
+	router.GET("/:username", controllers.UserTimeline)
 	router.GET("/:username/follow", controllers.UsernameFollow)
 	router.GET("/:username/unfollow", controllers.UsernameUnfollow)
 	router.POST("/register", controllers.Register_user)
