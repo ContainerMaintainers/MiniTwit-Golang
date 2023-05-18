@@ -10,9 +10,9 @@ services:
     image: postgres
     restart: always
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=minitwitdb
     ports:
       - '5432:5432'
     healthcheck:
@@ -34,28 +34,21 @@ services:
     image: containermaintainers/minitwit
     container_name: minitwit
     depends_on:
-      postgres:
-        condition: service_healthy
-      grafana:
-        condition: service_started
-      prometheus:
-        condition: service_started
-    # build: 
-    #   context: .
-    #   dockerfile: Dockerfile
-    #   args:
-    #     db_user: ${DB_USER}
-    #     db_password: ${DB_PASSWORD}
-    #     db_host: ${DB_HOST}
-    #     db_name: ${DB_NAME}
-    #     db_port: ${DB_PORT}
-    #     port: ${PORT}
-    #     session_key: ${SESSION_KEY}
-    #     gin_mode: ${GIN_MODE}
-    #     BUILDKIT_PROGRESS: plain docker-compose build
+      - postgres
+      - grafana
+      - prometheus
     ports:
       - '8080:8080'
     restart: always
+    environment:
+      - DB_NAME=minitwitdb
+      - DB_PORT=5432
+      - DB_PASSWORD=admin
+      - DB_USER=admin
+      - DB_HOST=postgres
+      - PORT=8080
+      - SESSION_KEY=session123
+      - GIN_MODE=debug
     links:
       - postgres:database
     networks:
@@ -66,12 +59,20 @@ services:
       #   constraints:
       #   - "node.hostname!=dbserver"
 
+  loadbalancer:
+    image: nginx
+    ports:
+      - '80:80'
+    volumes:
+      - /loadbalancer:/etc/nginx/conf.d
+    deploy:
+      replicas: 2
 
   prometheus:
     image: prom/prometheus
     container_name: prometheus
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../../prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus:/prometheus
     ports:
       - "9090:9090"
