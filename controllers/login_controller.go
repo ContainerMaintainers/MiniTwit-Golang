@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ContainerMaintainers/MiniTwit-Golang/monitoring"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,6 +40,8 @@ func Login_user(c *gin.Context) { //Logs the user in.
 		Password string `form:"password" json:"password"`
 	}
 
+	monitoring.CountEndpoint("/login", "POST")
+
 	err := c.Bind(&body)
 	if err != nil {
 		log.Print("Ran into error when binding to context during " + c.Request.RequestURI + ": " + err.Error())
@@ -68,6 +71,9 @@ func Login_user(c *gin.Context) { //Logs the user in.
 
 // ENDPOINT: GET /login
 func Loginf(c *gin.Context) {
+
+	monitoring.CountEndpoint("/login", "GET")
+
 	c.HTML(http.StatusOK, "login.html", gin.H{
 		"messages": "Login page",
 	})
@@ -75,6 +81,9 @@ func Loginf(c *gin.Context) {
 
 // ENDPOINT: GET /logout
 func Logout_user(c *gin.Context) {
+
+	monitoring.CountEndpoint("/logout", "GET")
+
 	//clear session user
 	user = -1
 

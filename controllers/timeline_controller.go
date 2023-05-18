@@ -4,12 +4,16 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ContainerMaintainers/MiniTwit-Golang/monitoring"
 	"github.com/gin-gonic/gin"
 )
 
 // ENDPOINT: GET /
 func IndexTimeline(c *gin.Context) {
+
 	page := c.DefaultQuery("page", "0")
+
+	monitoring.CountEndpoint("/", "GET")
 
 	if user == -1 {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
@@ -28,6 +32,8 @@ func IndexTimeline(c *gin.Context) {
 // ENDPOINT: GET /public
 func Timeline(c *gin.Context) {
 	page := c.DefaultQuery("page", "0")
+
+	monitoring.CountEndpoint("/public", "GET")
 
 	if user == -1 {
 		c.HTML(http.StatusOK, "timeline.html", gin.H{
@@ -49,6 +55,8 @@ func UserTimeline(c *gin.Context) { // Displays an individual's timeline
 	username := c.Param("username") // gets the <username> from the url
 	userID, err := getUserId(username)
 	page := c.DefaultQuery("page", "0")
+
+	monitoring.CountEndpoint("/:username", "GET")
 
 	if err != nil {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " User " + username + " not found")

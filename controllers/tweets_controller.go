@@ -3,8 +3,8 @@ package controllers
 import (
 	"log"
 	"net/http"
-	"time"
 	"strconv"
+	"time"
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
@@ -16,10 +16,10 @@ import (
 const Per_page int = 30
 
 type JoinedMessage struct {
-	Author_id uint
-	Username  string
-	Text      string
-	Pub_Date  uint
+	Author_id     uint
+	Username      string
+	Text          string
+	Pub_Date      uint
 	FormattedDate string // new variable to hold the formatted date string
 }
 
@@ -110,7 +110,7 @@ func AddMessage(c *gin.Context) { // Registers a new message for the user.
 		c.Status(400)
 		return
 	}
-	
+
 	username := c.Param("username") // gets the <username> from the url
 	c.HTML(http.StatusOK, "timeline.html", gin.H{
 		"title":     "My Timeline",
@@ -124,6 +124,9 @@ func AddMessage(c *gin.Context) { // Registers a new message for the user.
 
 // ENDPOINT: GET /ping
 func Ping(c *gin.Context) {
+
+	monitoring.CountEndpoint("/ping", "GET")
+
 	c.JSON(200, gin.H{
 		"message": "pong",
 	})

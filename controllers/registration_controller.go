@@ -2,14 +2,16 @@ package controllers
 
 import (
 	//"fmt"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
-	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/monitoring"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Salt_pwd(pwd string) string {
@@ -37,6 +39,9 @@ func checkPasswordHash(username string, enteredPW string) (bool, error) {
 
 // ENDPOINT: GET /register
 func Register(c *gin.Context) {
+
+	monitoring.CountEndpoint("/register", "GET")
+
 	c.HTML(http.StatusOK, "register.html", gin.H{
 		"messages": "register page",
 	})
@@ -44,7 +49,7 @@ func Register(c *gin.Context) {
 
 // Registration Helper Function
 func ValidRegistration(c *gin.Context, username string, email string, password1 string, password2 string) bool {
-	
+
 	//error = ""
 	if password1 == "" || email == "" || username == "" {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " Missing Field")
@@ -76,6 +81,8 @@ func ValidRegistration(c *gin.Context, username string, email string, password1 
 
 // ENDPOINT: POST /register
 func Register_user(c *gin.Context) {
+
+	monitoring.CountEndpoint("/register", "POST")
 
 	var body struct {
 		Username  string `form:"username" json:"username"`

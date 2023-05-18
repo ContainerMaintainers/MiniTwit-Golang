@@ -47,7 +47,7 @@ func SimLatest(c *gin.Context) {
 // ENDPOINT: POST /sim/register
 func SimRegister(c *gin.Context) {
 
-	monitoring.CountEndpoint("/sim/register", "POSt")
+	monitoring.CountEndpoint("/sim/register", "POST")
 
 	updateLatest(c.Request)
 

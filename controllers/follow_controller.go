@@ -7,6 +7,7 @@ import (
 
 	"github.com/ContainerMaintainers/MiniTwit-Golang/database"
 	"github.com/ContainerMaintainers/MiniTwit-Golang/infrastructure/entities"
+	"github.com/ContainerMaintainers/MiniTwit-Golang/monitoring"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +19,8 @@ var (
 
 // ENDPOINT: GET /:username/follow
 func UsernameFollow(c *gin.Context) { // Adds the current user as follower of the given user
+
+	monitoring.CountEndpoint("/:username/follow", "GET")
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
@@ -62,6 +65,8 @@ func GetFollower(follower uint, following uint) bool {
 
 // ENDPOINT: GET /:username/unfollow
 func UsernameUnfollow(c *gin.Context) { // Adds the current user as follower of the given user
+
+	monitoring.CountEndpoint("/:username/unfollow", "GET")
 
 	if user == -1 {
 		log.Print("Bad request during " + c.Request.RequestURI + ": " + " No user logged in")
