@@ -1,0 +1,13 @@
+{
+    "builder": {
+      "gc": {
+        "defaultKeepStorage": "20GB",
+        "enabled": true
+      }
+    },
+    "experimental": true,
+    "features": {
+      "buildkit": true
+    },
+    "metrics-addr": "0.0.0.0:9323"
+}
