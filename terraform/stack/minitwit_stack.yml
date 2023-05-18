@@ -74,10 +74,12 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus:/prometheus
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "9090:9090"
     networks:
       - main
+    user: root
     deploy:
       replicas: 1
 
