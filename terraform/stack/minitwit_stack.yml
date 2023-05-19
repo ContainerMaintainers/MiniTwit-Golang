@@ -45,7 +45,7 @@ services:
       - DB_PORT=${DB_PORT}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_USER=${DB_USER}
-      - DB_HOST=main
+      - DB_HOST=database
       - PORT=8080
       - SESSION_KEY=${SESSION_KEY}
       - GIN_MODE=${GIN_MODE}
