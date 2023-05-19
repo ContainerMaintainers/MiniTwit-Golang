@@ -50,7 +50,7 @@ ssh \
     -o 'StrictHostKeyChecking no' \
     root@$(terraform output -raw minitwit-swarm-leader-ip-address) \
     -i ssh_key/terraform \
-    'DB_NAME=$DB_NAME DB_USER=$DB_USER DB_PASSWORD=$DB_PASSWORD DB_PORT=$DB_PORT SESSION_KEY=$SESSION_KEY GIN_MODE=${GIN_MODE} docker stack deploy minitwit -c minitwit_stack.yml'
+    "DB_NAME=$DB_NAME DB_USER=$DB_USER DB_PASSWORD=$DB_PASSWORD DB_PORT=$DB_PORT SESSION_KEY=$SESSION_KEY GIN_MODE=${GIN_MODE} docker stack deploy minitwit -c minitwit_stack.yml"
 
 echo -e "\n--> Done bootstrapping Minitwit"
 echo -e "--> The dbs will need a moment to initialize, this can take up to a couple of minutes..."
