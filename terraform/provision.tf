@@ -43,15 +43,20 @@ resource "digitalocean_droplet" "minitwit-swarm-leader" {
       "ufw allow 80",
       "ufw allow 8080",
       "ufw allow 8888",
-      "echo \"export GIN_MODE=debug\" > /root/.bashrc",
-      "echo \"export DB_USER=admin\" > /root/.bashrc",
-      "echo \"export DB_PASSWORD=admin\" > /root/.bashrc",
-      "echo \"export DB_NAME=minitwitdb\" > /root/.bashrc",
-      "echo \"export DB_PORT=5432\" > /root/.bashrc",
+      "echo \"export GIN_MODE=debug\" >> /root/.bashrc",
+      "echo \"export DB_USER=admin\" >> /root/.bashrc",
+      "echo \"export DB_PASSWORD=admin\" >> /root/.bashrc",
+      "echo \"export DB_NAME=minitwitdb\" >> /root/.bashrc",
+      "echo \"export DB_PORT=5432\" >> /root/.bashrc",
 
       # initialize docker swarm cluster
       "docker swarm init --advertise-addr ${self.ipv4_address}"
     ]
+  }
+
+  # wait 10 seconds so ssh doesn't fail
+  provisioner "local-exec" {
+    command = "sleep 10"
   }
 
   # save the worker join token
