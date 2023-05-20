@@ -72,8 +72,8 @@ services:
     image: prom/prometheus
     container_name: prometheus
     volumes:
-      - /prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus:/prometheus
+      - /root/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /root/prometheus:/prometheus
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "9090:9090"
