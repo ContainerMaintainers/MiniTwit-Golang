@@ -54,7 +54,7 @@ resource "digitalocean_droplet" "minitwit-swarm-leader" {
       "ufw allow 8080",
       "ufw allow 8888",
       # set env vars
-      "echo \"touch /root/.env\" >> /root/.bashrc",
+      "echo \"source /root/.env\" >> /root/.bashrc",
       # create volume directories
       "mkdir /prometheus",
       # initialize docker swarm cluster
@@ -140,7 +140,7 @@ resource "digitalocean_droplet" "minitwit-swarm-manager" {
       "ufw allow 8080",
       "ufw allow 8888",
       # set env vars
-      "echo \"touch /root/.env\" >> /root/.bashrc",
+      "echo \"source /root/.env\" >> /root/.bashrc",
       # create volume directories
       "mkdir /prometheus",
       # join swarm cluster as managers
@@ -211,7 +211,7 @@ resource "digitalocean_droplet" "minitwit-swarm-worker" {
       "ufw allow 8080",
       "ufw allow 8888",
       # set env vars
-      "echo \"touch /root/.env\" >> /root/.bashrc",
+      "echo \"source /root/.env\" >> /root/.bashrc",
       # create volume directories
       "mkdir /prometheus",
       # join swarm cluster as workers
