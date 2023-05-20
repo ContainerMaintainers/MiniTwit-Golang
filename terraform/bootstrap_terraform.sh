@@ -12,13 +12,6 @@ echo -e "\n--> Checking that environment variables are set\n"
 [ -z "$STATE_FILE" ] && echo "STATE_FILE is not set" && exit
 [ -z "$AWS_ACCESS_KEY_ID" ] && echo "AWS_ACCESS_KEY_ID is not set" && exit
 [ -z "$AWS_SECRET_ACCESS_KEY" ] && echo "AWS_SECRET_ACCESS_KEY is not set" && exit
-[ -z "$GIN_MODE" ] && echo "GIN_MODE is not set" && exit
-[ -z "$DB_USER" ] && echo "DB_USER is not set" && exit
-[ -z "$DB_PASSWORD" ] && echo "DB_PASSWORD is not set" && exit
-[ -z "$DB_NAME" ] && echo "DB_NAME is not set" && exit
-[ -z "$DB_PORT" ] && echo "DB_PORT is not set" && exit
-[ -z "$SESSION_KEY" ] && echo "SESSION_KEY is not set" && exit
-
 
 echo -e "\n--> Initializing terraform\n"
 # initialize terraform
@@ -43,6 +36,22 @@ bash scripts/gen_load_balancer_config.sh
 # scp loadbalancer config to all nodes
 echo -e "\n--> Copying loadbalancer configuration to nodes\n"
 bash scripts/scp_load_balancer_config.sh
+
+# .env file to all nodes
+echo -e "\n--> Copying .env file to nodes\n"
+bash scripts/scp_env.sh
+
+# grafana config to all nodes
+echo -e "\n--> Copying grafan config files to nodes\n"
+bash scripts/scp_grafana_config.sh
+
+# stack file to all nodes
+echo -e "\n--> Copying stack file to leader\n"
+bash scripts/scp_stack.sh
+
+# prometheus config file to all nodes
+echo -e "\n--> Copying prometheus config file to nodes\n"
+bash scripts/scp_prometheus_config.sh
 
 # deploy the stack to the cluster
 echo -e "\n--> Deploying the Minitwit stack to the cluster\n"

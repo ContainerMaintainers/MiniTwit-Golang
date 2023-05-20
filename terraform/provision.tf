@@ -23,36 +23,6 @@ resource "digitalocean_droplet" "minitwit-swarm-leader" {
     timeout = "2m"
   }
 
-  provisioner "file" {
-    source = "stack/minitwit_stack.yml"
-    destination = "/root/minitwit_stack.yml"
-  }
-
-  provisioner "file" {
-    source = "stack/prometheus.yml"
-    destination = "/root/prometheus.yml"
-  }
-
-  provisioner "file" {
-    source = "daemon.json"
-    destination = "/etc/docker/daemon.json"
-  }
-
-  provisioner "file" {
-    source = ".env"
-    destination = "/root/.env"
-  }
-
-  provisioner "file" {
-    source = "../grafana/dashboards"
-    destination = "/root/grafana/dashboards"
-  }
-
-  provisioner "file" {
-    source = "../grafana/provisioning"
-    destination = "/root/grafana/provisioning"
-  }
-
   provisioner "remote-exec" {
     inline = [
       # allow ports for docker swarm
@@ -124,31 +94,6 @@ resource "digitalocean_droplet" "minitwit-swarm-manager" {
     destination = "/root/manager_token"
   }
 
-  provisioner "file" {
-    source = "stack/prometheus.yml"
-    destination = "/root/prometheus.yml"
-  }
-
-  provisioner "file" {
-    source = "daemon.json"
-    destination = "/etc/docker/daemon.json"
-  }
-
-  provisioner "file" {
-    source = ".env"
-    destination = "/root/.env"
-  }
-
-  provisioner "file" {
-    source = "../grafana/dashboards"
-    destination = "/root/grafana/dashboards"
-  }
-
-  provisioner "file" {
-    source = "../grafana/provisioning"
-    destination = "/root/grafana/provisioning"
-  }
-
   provisioner "remote-exec" {
     inline = [
       # allow ports for docker swarm
@@ -203,31 +148,6 @@ resource "digitalocean_droplet" "minitwit-swarm-worker" {
   provisioner "file" {
     source = "temp/worker_token"
     destination = "/root/worker_token"
-  }
-
-  provisioner "file" {
-    source = "stack/prometheus.yml"
-    destination = "/root/prometheus.yml"
-  }
-
-  provisioner "file" {
-    source = "daemon.json"
-    destination = "/etc/docker/daemon.json"
-  }
-
-  provisioner "file" {
-    source = ".env"
-    destination = "/root/.env"
-  }
-
-  provisioner "file" {
-    source = "../grafana/dashboards"
-    destination = "/root/grafana/dashboards"
-  }
-
-  provisioner "file" {
-    source = "../grafana/provisioning"
-    destination = "/root/grafana/provisioning"
   }
 
   provisioner "remote-exec" {
