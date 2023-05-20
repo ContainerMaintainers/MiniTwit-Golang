@@ -55,6 +55,7 @@
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
+      "id": 5,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -209,12 +210,12 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "{__name__=\"up\", group=\"production\", instance=\"localhost:8080\", job=\"minittwit-app\"}"
+                  "options": "{__name__=\"up\", group=\"production\", instance=\"164.90.211.86:8080\", job=\"minittwit-app\"}"
                 },
                 "properties": [
                   {
                     "id": "displayName",
-                    "value": "MiniTwit App"
+                    "value": "MiniTwit Deployed App"
                   }
                 ]
               },
@@ -227,6 +228,18 @@
                   {
                     "id": "displayName",
                     "value": "Prometheus"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "{__name__=\"up\", group=\"production\", instance=\"localhost:8080\", job=\"minittwit-app\"}"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "MiniTwit Local App"
                   }
                 ]
               }
@@ -255,7 +268,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
+                "uid": "TSwyULa4z"
               },
               "editorMode": "builder",
               "expr": "up",
