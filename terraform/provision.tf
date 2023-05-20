@@ -29,6 +29,11 @@ resource "digitalocean_droplet" "minitwit-swarm-leader" {
   }
 
   provisioner "file" {
+    source = "stack/prometheus.yml"
+    destination = "prometheus/prometheus.yml"
+  }
+
+  provisioner "file" {
     source = "daemon.json"
     destination = "/etc/docker/daemon.json"
   }
