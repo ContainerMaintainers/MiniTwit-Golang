@@ -15,6 +15,6 @@ rows+=$(terraform output -json minitwit-swarm-worker-ip-address | jq -r .[])
 
 # scp the file
 for ip in $rows; do
-    ssh -o 'StrictHostKeyChecking no' root@$ip -i $key_file "mkdir /loadbalancer || true"
+    ssh -o 'StrictHostKeyChecking no' root@$ip -i $key_file "mkdir -p /loadbalancer"
     rsync -a -e "ssh -o 'StrictHostKeyChecking no' -i $key_file" $config_file root@$ip:/loadbalancer/default.conf
 done
