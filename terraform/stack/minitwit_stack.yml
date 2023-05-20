@@ -85,7 +85,10 @@ services:
 
 
   grafana:
-    image: grafana/grafana:4.5.2
+    image: grafana/grafana:9.4.7
+    volumes:
+      - /root/grafana/dashboards:/var/lib/grafana/dashboards
+      - /root/grafana/provisioning:/etc/grafana/provisioning
     ports:
       - "3000:3000"  
     networks:
