@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # .env file
-env='../../.env'
+env='../.env'
 
 # ssh key
 key_file='ssh_key/terraform'
@@ -13,7 +13,7 @@ rows+=$(terraform output -json minitwit-swarm-manager-ip-address | jq -r .[])
 rows+=' '
 rows+=$(terraform output -json minitwit-swarm-worker-ip-address | jq -r .[])
 
-# scp the file
+# rsync the file
 for ip in $rows; do
-    scp -i $key_file $env root@$ip:/root/.env
+    rsync -a -e "ssh -o 'StrictHostKeyChecking no' -i $key_file" $env root@$ip:/root/.env
 done

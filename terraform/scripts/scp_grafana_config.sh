@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # grafana config
-grafana='../../grafana'
+grafana='../grafana'
 
 # ssh key
 key_file='ssh_key/terraform'
@@ -15,5 +15,5 @@ rows+=$(terraform output -json minitwit-swarm-worker-ip-address | jq -r .[])
 
 # scp the file
 for ip in $rows; do
-    scp -i $key_file $grafana root@$ip:/root/grafana
+    rsync -a -e "ssh -o 'StrictHostKeyChecking no' -i $key_file" $grafana root@$ip:/root/grafana
 done

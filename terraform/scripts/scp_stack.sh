@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # .env file
-env='../stack/minitwit_stack.yml'
+env='stack/minitwit_stack.yml'
 
 # ssh key
 key_file='ssh_key/terraform'
