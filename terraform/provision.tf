@@ -30,7 +30,7 @@ resource "digitalocean_droplet" "minitwit-swarm-leader" {
 
   provisioner "file" {
     source = "stack/prometheus.yml"
-    destination = "/root/prometheus.yml"
+    destination = "/prometheus/prometheus.yml"
   }
 
   provisioner "file" {
@@ -111,6 +111,16 @@ resource "digitalocean_droplet" "minitwit-swarm-manager" {
     destination = "/root/manager_token"
   }
 
+  provisioner "file" {
+    source = "stack/prometheus.yml"
+    destination = "/prometheus/prometheus.yml"
+  }
+
+  provisioner "file" {
+    source = "daemon.json"
+    destination = "/etc/docker/daemon.json"
+  }
+
   provisioner "remote-exec" {
     inline = [
       # allow ports for docker swarm
@@ -121,6 +131,11 @@ resource "digitalocean_droplet" "minitwit-swarm-manager" {
       "ufw allow 80",
       "ufw allow 8080",
       "ufw allow 8888",
+      "echo \"export GIN_MODE=debug\" >> /root/.bashrc",
+      "echo \"export DB_USER=admin\" >> /root/.bashrc",
+      "echo \"export DB_PASSWORD=admin\" >> /root/.bashrc",
+      "echo \"export DB_NAME=minitwitdb\" >> /root/.bashrc",
+      "echo \"export DB_PORT=5432\" >> /root/.bashrc",
 
       # join swarm cluster as managers
       "docker swarm join --token $(cat manager_token) ${digitalocean_droplet.minitwit-swarm-leader.ipv4_address}"
@@ -164,6 +179,16 @@ resource "digitalocean_droplet" "minitwit-swarm-worker" {
     destination = "/root/worker_token"
   }
 
+  provisioner "file" {
+    source = "stack/prometheus.yml"
+    destination = "/prometheus/prometheus.yml"
+  }
+
+  provisioner "file" {
+    source = "daemon.json"
+    destination = "/etc/docker/daemon.json"
+  }
+
   provisioner "remote-exec" {
     inline = [
       # allow ports for docker swarm
@@ -174,6 +199,11 @@ resource "digitalocean_droplet" "minitwit-swarm-worker" {
       "ufw allow 80",
       "ufw allow 8080",
       "ufw allow 8888",
+      "echo \"export GIN_MODE=debug\" >> /root/.bashrc",
+      "echo \"export DB_USER=admin\" >> /root/.bashrc",
+      "echo \"export DB_PASSWORD=admin\" >> /root/.bashrc",
+      "echo \"export DB_NAME=minitwitdb\" >> /root/.bashrc",
+      "echo \"export DB_PORT=5432\" >> /root/.bashrc",
 
       # join swarm cluster as workers
       "docker swarm join --token $(cat worker_token) ${digitalocean_droplet.minitwit-swarm-leader.ipv4_address}"
