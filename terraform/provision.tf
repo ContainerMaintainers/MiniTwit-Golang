@@ -43,6 +43,16 @@ resource "digitalocean_droplet" "minitwit-swarm-leader" {
     destination = "/root/.env"
   }
 
+  provisioner "file" {
+    source = "../grafana/dashboards"
+    destination = "/root/grafana/dashboards"
+  }
+
+  provisioner "file" {
+    source = "../grafana/provisioning"
+    destination = "/root/grafana/provisioning"
+  }
+
   provisioner "remote-exec" {
     inline = [
       # allow ports for docker swarm
@@ -129,6 +139,16 @@ resource "digitalocean_droplet" "minitwit-swarm-manager" {
     destination = "/root/.env"
   }
 
+  provisioner "file" {
+    source = "../grafana/dashboards"
+    destination = "/root/grafana/dashboards"
+  }
+
+  provisioner "file" {
+    source = "../grafana/provisioning"
+    destination = "/root/grafana/provisioning"
+  }
+
   provisioner "remote-exec" {
     inline = [
       # allow ports for docker swarm
@@ -198,6 +218,16 @@ resource "digitalocean_droplet" "minitwit-swarm-worker" {
   provisioner "file" {
     source = ".env"
     destination = "/root/.env"
+  }
+
+  provisioner "file" {
+    source = "../grafana/dashboards"
+    destination = "/root/grafana/dashboards"
+  }
+
+  provisioner "file" {
+    source = "../grafana/provisioning"
+    destination = "/root/grafana/provisioning"
   }
 
   provisioner "remote-exec" {
