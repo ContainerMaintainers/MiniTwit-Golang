@@ -35,18 +35,18 @@ jobs:
       - name: Create .env
         run: |
           echo "export GIN_MODE=${{ vars.GIN_MODE }}" > .env
-          echo "export DB_USER=${{  secrets.DB_USER  }}" > .env
-          echo "export DB_PASSWORD=${{  secrets.DB_PASSWORD  }}" > .env
-          echo "export DB_NAME=${{  secrets.DB_NAME  }}" > .env
-          echo "export DB_PORT=${{  secrets.DB_PORT  }}" > .env
+          echo "export DB_USER=${{  secrets.DB_USER  }}" >> .env
+          echo "export DB_PASSWORD=${{  secrets.DB_PASSWORD  }}" >> .env
+          echo "export DB_NAME=${{  secrets.DB_NAME  }}" >> .env
+          echo "export DB_PORT=${{  secrets.DB_PORT  }}" >> .env
       
       - name: Create terraform secrets
         run: |
-          echo "export TF_VAR_do_token=${{ secrets.do_token }}" > .env
-          echo "export SPACE_NAME=${{ secrets.SPACE_NAME }}" > .env
-          echo "export STATE_FILE=${{ secrets.STATE_FILE }}" > .env
-          echo "export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" > .env
-          echo "export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" > .env
+          echo "export TF_VAR_do_token=${{ secrets.do_token }}" > terraform/secrets
+          echo "export SPACE_NAME=${{ secrets.SPACE_NAME }}" >> terraform/secrets
+          echo "export STATE_FILE=${{ secrets.STATE_FILE }}" >> terraform/secrets
+          echo "export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> terraform/secrets
+          echo "export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> terraform/secrets
       
       - name: DO SSH KEY
         run: |
