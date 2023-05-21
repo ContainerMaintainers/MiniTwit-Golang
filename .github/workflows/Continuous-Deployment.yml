@@ -57,4 +57,4 @@ jobs:
       - name: Terraform deploy
         uses: hashicorp/setup-terraform@v2.0.3
       
-      - run: bash bootstrap_terraform.sh
+      - run: bash terraform/bootstrap_terraform.sh
