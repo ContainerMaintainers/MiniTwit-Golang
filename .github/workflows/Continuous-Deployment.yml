@@ -51,8 +51,8 @@ jobs:
       - name: DO SSH KEY
         run: |
           mkdir terraform/ssh_key
-          echo ${{ secrets.SSH_KEY }} > terraform/ssh_key/terraform
-          echo ${{ secrets.SSH_PUB_KEY }} > terraform/ssh_key/terraform.pub
+          echo "${{ secrets.SSH_KEY }}" > terraform/ssh_key/terraform
+          echo "${{ secrets.SSH_PUB_KEY }}" > terraform/ssh_key/terraform.pub
           
       - name: Terraform deploy
         uses: hashicorp/setup-terraform@v2.0.3
