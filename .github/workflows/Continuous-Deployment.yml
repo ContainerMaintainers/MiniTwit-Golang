@@ -3,14 +3,7 @@ name: Minitwit Continuous Deployment
 on:
   push:
     branches:
-      - main
-  workflow_run:
-    workflows:
-      - "Continuous Deployment"
-    types:
-      - completed
-    branches:
-      - main
+      - feature/docker-swarm
 
 jobs:
   build:
@@ -39,10 +32,29 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/minitwit:webbuildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/minitwit:webbuildcache,mode=max
 
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-            host: ${{  secrets.SSH_HOST }}
-            username: ${{  secrets.SSH_USER }}
-            key: ${{  secrets.SSH_KEY }}
-            script: bash deploy.sh containermaintainers ${{  vars.PORT  }} ${{  secrets.DB_NAME  }} ${{  secrets.DB_PORT  }} ${{  secrets.DB_PASSWORD  }} ${{  secrets.DB_USER  }} ${{  secrets.DB_HOST  }} ${{  secrets.SESSION_KEY  }} ${{  vars.GIN_MODE  }} ${{ secrets.LOKI_USER }} ${{ secrets.LOKI_PASSWORD }} ${{ secrets.LOKI_HOST }}  ${{ vars.LOKI_PORT }}
+      - name: Create .env
+        run: |
+          echo "export GIN_MODE=${{ vars.GIN_MODE }}" > .env
+          echo "export DB_USER=${{  secrets.DB_USER  }}" > .env
+          echo "export DB_PASSWORD=${{  secrets.DB_PASSWORD  }}" > .env
+          echo "export DB_NAME=${{  secrets.DB_NAME  }}" > .env
+          echo "export DB_PORT=${{  secrets.DB_PORT  }}" > .env
+      
+      - name: Create terraform secrets
+        run: |
+          echo "export TF_VAR_do_token=${{ secrets.do_token }}" > .env
+          echo "export SPACE_NAME=${{ secrets.SPACE_NAME }}" > .env
+          echo "export STATE_FILE=${{ secrets.STATE_FILE }}" > .env
+          echo "export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" > .env
+          echo "export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" > .env
+      
+      - name: DO SSH KEY
+        run: |
+          mkdir terraform/ssh_key
+          echo ${{ secrets.SSH_KEY }} > terraform/ssh_key/terraform
+          echo ${{ secrets.SSH_PUB_KEY }} > terraform/ssh_key/terraform.pub
+          
+      - name: Terraform deploy
+        uses: hashicorp/setup-terraform@v2.0.3
+      
+      - run: bash bootstrap_terraform.sh
