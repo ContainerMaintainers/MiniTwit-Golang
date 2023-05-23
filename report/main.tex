@@ -1,0 +1,110 @@
+\documentclass[a4paper, 11pt, titlepage]{article}
+\usepackage[a4paper,left=20mm,top=20mm,right=20mm,bottom=20mm]{geometry}
+\usepackage[table]{xcolor}
+
+% PACKAGES REGARDING DOCUMENT LAYOUT
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+\usepackage{csquotes, enumitem}
+\usepackage{listings}
+
+\usepackage{amsmath}
+\usepackage{tikz}
+
+% FOR SPACING
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+\vspace{1.5cm}
+
+% PACKAGES REGARDING FIGURES AND PDFs
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage{multicol}
+\newcommand{\R}{\mathbb{R}}
+%\usepackage{color}
+\usepackage{minted}
+
+\usepackage{pgfplots}
+
+% sabrina added these
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+% Danyal added this
+\newcommand{\fig}[3]{
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=#2]{#1}
+		\caption{#3}
+		\label{fig:#1}
+\end{figure}
+}
+\hypersetup{
+	colorlinks,
+	linkcolor={black!50!black},
+	citecolor={blue!50!black},
+	urlcolor={blue!80!black}
+}
+
+
+% BIBLIOGRAPHY
+\usepackage[
+backend=biber,
+style=ieee, %chicago-authordate, ieee
+sorting=ynt
+]{biblatex}
+
+\addbibresource{sections/bibliography.bib}
+
+%\definecolor{dkgreen}{rgb}{0,0.6,0}
+%\definecolor{gray}{rgb}{0.5,0.5,0.5}
+%\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=C,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\begin{document}
+
+\input{sections/00-titlepage}
+\newpage
+\input{sections/01-SystemPerspective}
+
+\input{sections/02-ProcessOverview}
+
+\input{sections/03-Reflections}
+\newpage
+\input{sections/xx-Security}
+\newpage
+
+For now just some raw notes on what to include:
+
+We are missing:
+Pen-test of other teams system?
+Security report.
+SLA review of other team.
+Certain kinds of tests
+Static code analysis
+Docker swarm
+Adherence to the 'three ways'
+'Rolling updates strategy'?
+
+\newpage
+\printbibliography
+\end{document}
