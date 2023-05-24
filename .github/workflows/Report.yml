@@ -2,8 +2,8 @@ name: Build report
 on:
   push:
     branches:
-      main
-      feature/report
+      - main
+      - feature/report
 
 jobs:
   build-report:
