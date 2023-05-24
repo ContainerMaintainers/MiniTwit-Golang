@@ -4,7 +4,7 @@ datasources:
 - name: Prometheus
   type: prometheus
   access: proxy
-  url: http://164.92.240.232:9090  # localhost This should be configurable in some way??? The ip address should not be hardcoded
+  url: http://prometheus:9090  # localhost This should be configurable in some way??? The ip address should not be hardcoded
   orgId: 1
   uid: "TSwyULa4z"
   user: ""
@@ -24,7 +24,7 @@ datasources:
 - name: Loki
   type: loki
   access: proxy
-  url: http://164.92.240.232:3100  # localhost This should be configurable in some way??? The ip address should not be hardcoded
+  url: http://loki:3100  # localhost This should be configurable in some way??? The ip address should not be hardcoded
   orgId: 1
   uid: "n_Rr2LP4k"
   user: ""
