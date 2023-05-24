@@ -2,6 +2,12 @@
 
 A Golang Gin refactor of the minitwit application.
 
+## Before running the application
+
+Make sure docker is installed as well as docker compose.
+Furthermore, the docker drive for loki is also required. It can be installed via:
+`docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions`
+
 ## How to run the application
 
 1. Clone the repo
