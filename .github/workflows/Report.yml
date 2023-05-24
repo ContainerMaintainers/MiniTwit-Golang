@@ -1,0 +1,22 @@
+name: Build report
+on:
+  push:
+    branches:
+      main
+      feature/report
+
+jobs:
+  build-report:
+      name: Generate PDF
+      runs-on: ubuntu-latest
+      steps:
+        
+        - name: Checkout
+          uses: actions/checkout@v3
+          
+        - name: Build report
+          uses: vinay0410/tectonic-action@v1.1.2
+          with:
+            tex_path: report/main.tex
+            push: "yes"
+          
